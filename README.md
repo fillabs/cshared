@@ -1,0 +1,2 @@
+# cshared
+The shared library
