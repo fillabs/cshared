@@ -99,6 +99,12 @@ pchar_t * cstrpathextension(const pchar_t * str);
 #endif
 #define pchar_alloc(S) ((pchar_t*)malloc(sizeof(pchar_t)*((S)+1)))
 
+#ifdef _MSC_VER
+#define cPrefixUint64 "%016I64"
+#else 
+#define cPrefixUint64 "%016l"
+#endif
+
 #ifdef __cplusplus
 }
 #endif

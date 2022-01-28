@@ -116,6 +116,7 @@ FN_THROW(RuntimeException) size_t coer_read_octet_string_alloc(void ** const p, 
 FN_THROW(RuntimeException) int coer_write_bit_string(const void * const p, size_t bitlength, char ** const ptr, const char * const end, int error);
 FN_THROW(RuntimeException) size_t coer_read_bit_string (void * const p, size_t length, const char ** const ptr, const char * const end, int error);
 
+/*
 FN_THROW(RuntimeException) uint64_t coer_read_sequence_header(uint64_t opt_count, const char ** const ptr, const char * const end, int error);
 FN_THROW(RuntimeException) int   coer_write_sequence_header(uint64_t opt_count, uint64_t presence_mask, char ** const ptr, const char * const end, int error);
 FN_THROW(RuntimeException) int   coer_read_sequence(uint64_t opt_count, void * const p, coer_read_fn read_fn, const char** const ptr, const char* const end, int error);
@@ -124,6 +125,7 @@ FN_THROW(RuntimeException) int   coer_read_sequence(uint64_t opt_count, void * c
 #define COER_EXTENSIBLE(N)      ((N) | COER_EXTENSIBLE_BIT)
 #define COER_IS_EXTENDED(M)     ((int)(((uint64_t)(M))>>63))
 #define COER_IS_PRESENT(M,I)    ((M) & (((uint64_t)1)<<(I)))
+*/
 
 typedef uint32_t coer_tag_t;
 FN_THROW(RuntimeException) int coer_write_tag(coer_tag_t tag, char ** const ptr, const char * const end, int error);

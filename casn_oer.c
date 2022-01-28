@@ -244,6 +244,7 @@ size_t coer_length_size(size_t len)
 size_t coer_read_length(const char ** const ptr, const char * const end, int error)
 {
 	uint8_t n;
+	size_t ret;
 	if (*ptr >= end) {
 		THROW_ERROR(EFAULT);
 		return (uint64_t)-1;
@@ -251,9 +252,16 @@ size_t coer_read_length(const char ** const ptr, const char * const end, int err
 	n = *(const uint8_t*)((*ptr)++);
 	
 	if(0 == (n & 0x80)) {
-		return n;
+		ret = n;
 	}
-	return _coer_read_int_with_length (n & 0x7F, ptr, end, error);
+	else {
+		ret = (size_t)_coer_read_int_with_length(n & 0x7F, ptr, end, error);
+		if ((*ptr) + ret > end) {
+			THROW_ERROR(EFAULT);
+			return (uint64_t)-1;
+	}
+	}
+	return ret;
 }
 
 int  _coer_write_length(const size_t len, char ** const ptr, const char * const end, int error)
@@ -283,7 +291,7 @@ int  _coer_write_length(const size_t len, char ** const ptr, const char * const 
 	*ptr = (char*) p + l + 1;
 	return 0;
 }
-
+/*
 uint64_t coer_read_sequence_header(uint64_t opt_count, const char ** const ptr, const char * const end, int error)
 {
 	const uint8_t *p, *e;
@@ -330,7 +338,7 @@ int coer_write_sequence_header(uint64_t opt_count, uint64_t presence_mask, char 
 	return -1;
 
 }
-
+*/
 size_t coer_read_octet_string_alloc(void ** const p, size_t length, const char ** const ptr, const char * const end, int error)
 {
 	if (length == (size_t)-1) {
@@ -414,11 +422,55 @@ int coer_write_tag(coer_tag_t tag, char ** const ptr, const char * const end, in
 size_t coer_read_sequence_of(void * const p, coer_read_fn read_fn, const char ** const ptr, const char * const end, int error)
 {
 	size_t count, i;
-	count = coer_read_uint(ptr, end, error);
+	count = (size_t)coer_read_uint(ptr, end, error);
 	for (i = 0; i < count; i++) {
 		read_fn((void*)i, p, ptr, end, error);
 	}
 	return count;
 }
 
+char* _coer_write_sequenceof_count(size_t n, char** ptr, const char* end, int error)
+{
+	char* r = *ptr;
+	coer_write_uint(n, ptr, end, error);
+	return r;
+}
 
+void _coer_write_sequenceof_end(char* b, size_t n, const char* end, int error)
+{
+	size_t len = cintx_bytecount(n);
+	if (len > 1) {
+		if ((b + n + 1 + len) > end) {
+			THROW_ERROR(ENOSPC);
+		}
+		memmove(b + 1 + len, b + 2, n);
+		coer_write_uint(n, &b, b + 1 + len, error);
+	}
+	else {
+		b[1] = (char)n;
+	}
+	*(b++) = (char)len;
+}
+
+char* _coer_write_open_type_length(size_t length, char** const ptr, const char* const end, int error)
+{
+	char* r = *ptr;
+	coer_write_length(length, ptr, end, error);
+	return r;
+}
+
+void _coer_write_open_type_end(char * b, char** const ptr, const char* const end, int error)
+{
+	char* e = *ptr;
+	size_t len = e - b - 1;
+	if (len > 127) {
+		b[0] = (char)cintx_bytecount(len);
+		if (e + b[0] > end) {
+			THROW_ERROR(ENOSPC);
+		}
+		memmove(b + 1 + b[0], b + 1, len - 1);
+	}
+	else {
+		b[0] = (char)len;
+	}
+}

@@ -29,8 +29,11 @@ uint16_t cint16_swap(const uint16_t);
 #endif
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 # define cint64_hton(X) cint64_swap(X)
+# define cint64_ntoh(X) cint64_swap(X)
 # define cint32_hton(X) cint32_swap(X)
+# define cint32_ntoh(X) cint32_swap(X)
 # define cint16_hton(X) cint16_swap(X)
+# define cint16_ntoh(X) cint16_swap(X)
 # define cint64_lsb(X)  ((uint8_t)(((uint64_t)(X))>>56))
 # define cint32_lsb(X)  ((uint8_t)(((uint32_t)(X))>24))
 # define cint24_lsb(X)  ((uint8_t)(((uint32_t)(X))>16))
@@ -38,8 +41,11 @@ uint16_t cint16_swap(const uint16_t);
 # define cint32_lsb3(X) ((uint32_t)(((uint64_t)(X))>>8))
 #else
 # define cint64_hton(X) (X)
+# define cint64_ntoh(X) (X)
 # define cint32_hton(X) (X)
+# define cint32_ntoh(X) (X)
 # define cint16_hton(X) (X)
+# define cint16_ntoh(X) (X)
 # define cint64_lsb(X)  ((uint8_t)((X)&0xFF))
 # define cint32_lsb(X)  ((uint8_t)((X)&0xFF))
 # define cint24_lsb(X)  ((uint8_t)((X)&0xFF))

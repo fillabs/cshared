@@ -86,6 +86,7 @@ typedef void(cdestructor_fn)(void*);
         static void f(void) __attribute__((constructor)); \
         static void f(void)
 
+#define CUNUSED __attribute__((unused))
 #elif defined (_MSC_VER)
 #include <windows.h>
 #define _cfetch_and_add(P,X) (InterlockedAddNoFence(P,X)-X)
@@ -124,6 +125,7 @@ typedef void(cdestructor_fn)(void*);
         struct _initializer_##f##_t_ { _initializer_##f##_t_(void) { f(); } }; static _initializer_##f##_t_ _initializer_##f##_; \
         static void f(void)
 #endif
+#define CUNUSED
 #endif
 
 #define struct_from_member(TYPE,POINTER,MEMBER) ((TYPE*)(((const char*)POINTER)-offsetof(TYPE,MEMBER)))

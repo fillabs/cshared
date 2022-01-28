@@ -19,10 +19,10 @@
 #include <errno.h>
 
 #include "copts.h"
-#include "cmem.h"
+#include "cbyteswap.h"
 
 #ifdef _MSC_VER
-//#define inline __inline
+#define inline __inline
 #define strcasecmp _stricmp
 #define strdup _strdup
 #define _CRT_SECURE_NO_WARNINGS
@@ -179,7 +179,7 @@ static int do_coptions(int argc, char* argv[], int flags, copt_t* opts)
                                 }
                             }else if(t == COPT_BOOL || t == COPT_BOOLI){
                                 if(0==(flags & COPT_AFLAG_PRESCAN)){
-                                    set_option_value(o, argv[i], NULL);
+                                    set_option_value(o, argv[i], "1");
                                 }
                             }else{
                                 copt = o;
