@@ -13,4 +13,4 @@ headers       := copts.h cserialize.h cstr.h cdir.h cring.h e4c_lite.h cmsgq.h c
 tests         := test_copts.c test_cmsgq.c
 packages      := thread
 
-include arch/common.mk
+include common.mk
