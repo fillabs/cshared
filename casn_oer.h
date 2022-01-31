@@ -142,7 +142,21 @@ typedef struct {
 #define coer_sequence_of_header(ptr) ((*(const coer_sequence_of_header_t**)ptr)++)
 FN_THROW(RuntimeException) size_t coer_read_sequence_of(void * const p, coer_read_fn read_fn, const char ** const ptr, const char * const end, int error);
 
+FN_THROW(RuntimeException) char*  _coer_write_sequenceof_count(size_t count, char** const ptr, const char* const end, int error);
+FN_THROW(RuntimeException) void   _coer_write_sequenceof_end(char* b, size_t n, const char* end, int error);
+FN_THROW(RuntimeException) char*  _coer_write_open_type_length(size_t length, char** const ptr, const char* const end, int error);
+FN_THROW(RuntimeException) void   _coer_write_open_type_end(char* b, char** const ptr, const char* const end, int error);
 
+#define coer_read_sequence_of_foreach(N, PTR, END, ERROR) for (size_t N ## _sequence_index= 0, N ## _sequence_count=(size_t)coer_read_uint(PTR, END, ERROR); N ## _sequence_index < N ## _sequence_count; N ## _sequence_index++)
+#define coer_read_open_type_do(N, PTR, END, ERROR) for (size_t __ ## N ## __ot_run=1,  N ## _size=coer_read_length(PTR, END, ERROR|FSERR_SIZE); __ ## N ## __ot_run; __ ## N ## __ot_run=0)
+#define coer_read_sequence_do(N, PTR, END, ERROR) for (uint8_t __ ## N ## __seq_run=1, N ## _presence_mask=coer_read_uint8(PTR, END, ERROR); __ ## N ## __seq_run; __ ## N ## __seq_run=0)
+#define coer_read_choice_do(N, PTR, END, ERROR) for (uint32_t  __ ## N ## __ch_run=1,  N ## _tag=coer_read_tag(PTR, END, ERROR); __ ## N ## __ch_run; __ ## N ## __ch_run=0)
+
+#define coer_write_open_type_do(N,PTR,END,ERROR)  for(char * __ ## N ## _begin = _coer_write_open_type_length(0,PTR,END,ERROR);__ ## N ## _begin; __ ## N ## _begin = NULL)
+#define coer_write_open_type_end(N,PTR,END,ERROR)  do { _coer_write_open_type_end(__ ## N ## _begin, PTR, END, ERROR);} while(0)
+
+#define coer_write_sequenceof_do(N,PTR,END,ERROR) for(char * __ ## N ## _begin = _coer_write_sequenceof_count(0, PTR, END, ERROR); __ ## N ## _begin; __ ## N ## _begin = NULL)
+#define coer_write_sequenceof_end(N,COUNT,END,ERROR) do { _coer_write_sequenceof_end(__ ## N ## _begin, COUNT,END,ERROR);}while(0)
 
 #ifdef __cplusplus
 }
