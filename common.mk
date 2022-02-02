@@ -146,11 +146,13 @@ binnames   := $(patsubst %, $(outdir)/%, $(bins))
 ldflags += $(patsubst %, -L%, $(outdir) $(libdirs))
 
 ifneq ($(filter cxml, $(packages)),)
-  deplibs += $(outdir)/libcxml.a
+  deps += $(outdir)/libcxml.a
+  libs += $(outdir)/libcxml.a
 endif
 
 ifneq ($(filter cshared, $(packages)),)
-  deplibs += $(outdir)/libcshared.a
+  deps += $(outdir)/libcshared.a
+  libs += $(outdir)/libcshared.a
 endif
 
 
@@ -168,8 +170,8 @@ endef
 $(foreach l, $(alibs), $(eval $(ALibRule)))
 
 define SoLibRule
-$$(outdir)/lib$(l).so: $$(outdir)/lib%.so : $$(objects-$(l)) $$(objects) $$(deplibs)
-	$$(GCC) $$(cflags) -shared $$(ldflags) -o $$@ $$^ $$(csharedlib) $$(deplibs) $$(libs) $$(libs_$$*)
+$$(outdir)/lib$(l).so: $$(outdir)/lib%.so : $$(objects-$(l)) $$(objects) $$(deps) $$(deps-$(1))
+	$$(GCC) $$(cflags) -shared $$(ldflags) -o $$@ $$(objects-$(l)) $$(objects)  $$(csharedlib) $$(libs) $$(libs-$(1))
 ifeq (no,$$(DEBUG))
 	$$(STRIP) $@
 endif
@@ -177,27 +179,17 @@ endef
 $(foreach l, $(solibs), $(eval $(SoLibRule)))
 
 define BinRule
-$$(outdir)/$(b): $$(outdir)/%: $$(objects-$(b)) $$(objects) $$(deplibs)
-	$$(GCC) $$(cflags) $$(ldflags) -o $$@ $$^ $$(csharedlib) $$(deplibs) $$(libs) $$(libs_$$*) 
+$$(outdir)/$(b): $$(outdir)/%: $$(objects-$(b)) $$(objects) $$(deps) $$(deps-$(1))
+	$$(GCC) $$(cflags) $$(ldflags) -o $$@ $$(objects-$(b)) $$(objects)  $$(csharedlib) $$(libs) $$(libs-$(1)) 
 ifeq (no,$$(DEBUG))
 	$$(STRIP) $$@
 endif
 endef
 $(foreach b, $(bins), $(eval $(BinRule)))
 
-#$(eval $(call BinRule, certgen))
-
-#$(eval $(call BinRule, keygen))
- 
-#$(binnames): $(outdir)/% : $(eval $$(objects-%)) $(objects) $(deplibs)
-#	$(GCC) $(cflags) $(ldflags) -o $@ $^ $(csharedlib) $(deplibs) $(libs) $(libs_$*) 
-#ifeq (no,$(DEBUG))
-#	$(STRIP) $@
-#endif
-
 $(testbins): $(alibnames)
 $(testbins): $(outdir)/tests/% : tests/%.c
-	$(GCC) $(cflags) $(cflags_$*) -o $@ $< $(alibnames) $(libs) $(libs_$*)
+	$(GCC) $(cflags) $(cflags-$*) -o $@ $< $(alibnames) $(libs) $(libs-$*)
 ifeq (no,$(DEBUG))
 	$(STRIP) $@
 endif
