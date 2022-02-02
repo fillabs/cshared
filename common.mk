@@ -164,25 +164,28 @@ $(predirs) $(postdirs): DUMMY
 	$(MAKE) -C $@ ARCH=$(ARCH) PROJECTROOT=$(realpath $(PROJECTROOT)) BUILDROOT=$(realpath $(BUILDROOT)) DEBUG=$(DEBUG)
 
 define ALibRule
-$$(outdir)/lib$(l).a: $$(outdir)/lib%.a : $$(objects-$(l)) $$(objects)
-	$$(AR) rcs $$@ $$^
+$$(outdir)/lib$(l).a: $$(outdir)/lib%.a : $$(objects-$(l)) $$(objects) $$(deps) $$(deps-$(l))
+	$$(AR) rcs $$@ $$(objects-$(l)) $$(objects) 
+ifeq (no,$$(DEBUG))
+	$$(STRIP) --strip-unneeded $$@
+endif
 endef
 $(foreach l, $(alibs), $(eval $(ALibRule)))
 
 define SoLibRule
-$$(outdir)/lib$(l).so: $$(outdir)/lib%.so : $$(objects-$(l)) $$(objects) $$(deps) $$(deps-$(1))
-	$$(GCC) $$(cflags) -shared $$(ldflags) -o $$@ $$(objects-$(l)) $$(objects)  $$(csharedlib) $$(libs) $$(libs-$(1))
+$$(outdir)/lib$(l).so: $$(outdir)/lib%.so : $$(objects-$(l)) $$(objects) $$(deps) $$(deps-$(l))
+	$$(GCC) $$(cflags) -shared $$(ldflags) -o $$@ $$(objects-$(l)) $$(objects)  $$(csharedlib) $$(libs) $$(libs-$(l))
 ifeq (no,$$(DEBUG))
-	$$(STRIP) $@
+	$$(STRIP) -s $$@
 endif
 endef
 $(foreach l, $(solibs), $(eval $(SoLibRule)))
 
 define BinRule
-$$(outdir)/$(b): $$(outdir)/%: $$(objects-$(b)) $$(objects) $$(deps) $$(deps-$(1))
-	$$(GCC) $$(cflags) $$(ldflags) -o $$@ $$(objects-$(b)) $$(objects)  $$(csharedlib) $$(libs) $$(libs-$(1)) 
+$$(outdir)/$(b): $$(outdir)/%: $$(objects-$(b)) $$(objects) $$(deps) $$(deps-$(b))
+	$$(GCC) $$(cflags) $$(ldflags) -o $$@ $$(objects-$(b)) $$(objects)  $$(csharedlib) $$(libs) $$(libs-$(b)) 
 ifeq (no,$$(DEBUG))
-	$$(STRIP) $$@
+	$$(STRIP) -s $$@
 endif
 endef
 $(foreach b, $(bins), $(eval $(BinRule)))
@@ -191,10 +194,10 @@ $(testbins): $(alibnames)
 $(testbins): $(outdir)/tests/% : tests/%.c
 	$(GCC) $(cflags) $(cflags-$*) -o $@ $< $(alibnames) $(libs) $(libs-$*)
 ifeq (no,$(DEBUG))
-	$(STRIP) $@
+	$(STRIP) -s $@
 endif
 
-$(dirs):
+$(dirs) $(INSTALLROOT):
 	mkdir -p $@
 
 $(objects) $(binobjects): $(objdir)/%.o: %.c
@@ -220,5 +223,26 @@ docs: $(DOXYFILE)
 cleandocs:
 	rm -rf doc/html
 endif
+
+INSTALLROOT ?= $(PROJECTROOT)/install
+install: $(INSTALLROOT) 
+ifneq (,$(strip $(binnames)))
+	mkdir -p $(INSTALLROOT)/$(ARCH)$(dsuffix)/bin
+	cp -f $(binnames) $(INSTALLROOT)/$(ARCH)$(dsuffix)/bin
+endif
+#ifneq (,$(strip $(tests)))
+#	mkdir -p $(INSTALLROOT)/$(ARCH)$(dsuffix)/bin
+#	cp -f $(testbins) $(INSTALLROOT)/$(ARCH)$(dsuffix)/bin
+#endif
+ifneq (,$(strip $(alibnames) $(solibnames)))
+	mkdir -p $(INSTALLROOT)/$(ARCH)$(dsuffix)/lib
+	cp -f $(alibnames) $(solibnames) $(INSTALLROOT)/$(ARCH)$(dsuffix)/lib
+endif
+ifneq (,$(headers))
+	mkdir -p $(INSTALLROOT)/include
+	cp -rf $(headers) $(INSTALLROOT)/include
+endif
+
+
 
 include $(wildcard $(addsuffix /*.d, $(objdir)))
