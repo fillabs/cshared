@@ -245,6 +245,8 @@ cring_t * cring_zinsert_after (cring_t * * const root, cring_t * const i);
 cring_t * cring_zinsert_before(cring_t * * const root, cring_t * const i);
 void      cring_zcleunup( cring_t * * const root, void * const fn_destructor);
 
+#define cring_foreach(T,e,R) for(T*e=*((T**)(R)); e != (T*)(R); e = cring_next_cast(e,T))
+
 #define XRING_PREALLOC 16
 
 typedef struct xcring_t

@@ -584,7 +584,7 @@ void coptions_help_ex(FILE * f, const char * prgname, int flags, copt_t* opt, co
         }
     }
     while(opt->type != COPT_END){
-        if(opt->sopts || opt->lopt){
+        if((0 == (opt->type & COPT_NOHELP)) && (opt->sopts || opt->lopt)){
             fprintf(f, "  ");
 			print_opt_help(f, opt, flags, NULL);
         }

@@ -61,7 +61,9 @@ extern "C" {
                        *    terminated imediate and COPT_EHELP will be returned */
 
 
-        COPT_TYPE_MASK = 0x00FF, /**< Option type mask. For internal usage. */
+        COPT_TYPE_MASK = 0x00FF, /**< Option type mask. @internal. */
+        COPT_NOHELP    = 0x2000, /**< Mask. Can be or-ed with any other option.
+                                  *   Do not include in the help message generation */
         COPT_CALLBACK  = 0x4000, /**< Mask. Can be or-ed with any other option.
                                   *    That's mean treat vptr as a callback addres to call
                                   *    when option is occured */
