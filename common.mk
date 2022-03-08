@@ -105,6 +105,11 @@ ifneq ($(filter thread, $(packages)),)
   libs    += -lpthread
 endif
 
+ifneq ($(filter curl, $(packages)),)
+  defines += USE_CURL
+  libs    += -lcurl
+endif
+
 
 ifeq ($(testdir), )
   testdir := tests
