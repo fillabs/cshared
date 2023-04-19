@@ -229,7 +229,8 @@ cleandocs:
 	rm -rf doc/html
 endif
 
-INSTALLROOT ?= $(PROJECTROOT)/install
+ifneq(,$(INSTALLROOT))
+
 install: $(INSTALLROOT) 
 ifneq (,$(strip $(binnames)))
 	mkdir -p $(INSTALLROOT)/$(ARCH)$(dsuffix)/bin
@@ -248,6 +249,6 @@ ifneq (,$(headers))
 	cp -rf $(headers) $(INSTALLROOT)/include
 endif
 
-
+endif  # INSTALLROOT
 
 include $(wildcard $(addsuffix /*.d, $(objdir)))
