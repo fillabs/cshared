@@ -29,6 +29,9 @@ char * cstrcpy(char * dst, const char * src);
 /* copy up to maxsize characters from src to dst and return pointer to the next byte after the end */ 
 char * cstrncpy(char * dst, size_t maxsize, const char * src);
 
+char * cstrcat(char * dst, const char * add);
+char * cstrncat(char * dst, size_t maxsize, const char * add);
+
 /* copy up to maxsize characters from parameters to dst and return pointer to the next byte after the end */ 
 char * cvstrncpy(char * dst, size_t maxsize, const char * ptr, ...);
 

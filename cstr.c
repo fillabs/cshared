@@ -96,6 +96,20 @@ char * cstrrchr(const char * str, int c)
 	return ret;
 }
 
+char * cstrcat(char * dst, const char * add)
+{
+	if (!dst) return (char*)0;
+	char * end = dst + strlen(dst);
+	return cstrcpy(end, add);
+}
+
+char * cstrncat(char * dst, size_t maxsize, const char * add)
+{
+	if (!dst) return (char*)0;
+	char * end = dst + strlen(dst);
+	return cstrncpy(end, maxsize-(end-dst), add);
+}
+
 /* copy up to maxsize characters from src to dst and return pointer to the next byte after the end */ 
 char * cstrncpy(char * dst, size_t maxsize, const char * src)
 {

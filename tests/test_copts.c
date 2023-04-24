@@ -57,7 +57,7 @@ static copt_t options [] = {
     {"l",  "logfile",   COPT_STR    |COPT_CONFIG,  &logfile    , "Use this log file"   },
     {"e",  "strenum",   COPT_STRENUM|COPT_CONFIG,  &strenum[0] , "String enum values"  },
     {"pP", "port",      COPT_USHORT |COPT_CONFIG,  &port       , "Bind to port"        },
-    {"aA", "addr",      COPT_HOST   |COPT_CONFIG,  &addr       , "Bind to ip-address"  },
+    {"aA", "addr",      COPT_URL    |COPT_CONFIG,  &addr       , "Bind to ip-address"  },
     {"s",  "strings",   COPT_STRLIST|COPT_CONFIG,  &strs[0]    , "String list"         },
     {"S",  "str_cb",    COPT_STR    |COPT_CALLBACK,&str_callback,"String throw callback" },
     {"L",  "l_cb",      COPT_LONG   |COPT_CALLBACK,&long_callback,"Long throw callback" },

@@ -421,12 +421,12 @@ int coer_write_tag(coer_tag_t tag, char ** const ptr, const char * const end, in
 
 size_t coer_read_sequence_of(void * const p, coer_read_fn read_fn, const char ** const ptr, const char * const end, int error)
 {
-	size_t count, i;
+	size_t count, i, ret=0;
 	count = (size_t)coer_read_uint(ptr, end, error);
 	for (i = 0; i < count; i++) {
-		read_fn((void*)i, p, ptr, end, error);
+		ret += read_fn((void*)i, p, ptr, end, error);
 	}
-	return count;
+	return ret;
 }
 
 char* _coer_write_sequenceof_count(size_t n, char** ptr, const char* end, int error)

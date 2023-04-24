@@ -15,7 +15,13 @@ typedef DWORD thread_ret_t;
 pthread_key_t thr_id_key;
 #define getThreadId()   (TestThread*)pthread_getspecific(thr_id_key)
 #define setThreadId(ID) pthread_setspecific(thr_id_key, ID)
+#ifdef __CYGWIN__
 #define yield() pthread_yield()
+#define join(x) pthread_join(&x, NULL);
+#else
+#define yield() sched_yield()
+#define join(x) pthread_join(x, NULL);
+#endif
 typedef void * thread_ret_t;
 #endif
 
@@ -122,7 +128,7 @@ int main(int argc, char** argv)
     }
  #else
     for(int i=0; i<R_THREADS; i++){
-        pthread_join(&threads[i], NULL);
+        join(threads[i]);
     }
 #endif
     return 0;
