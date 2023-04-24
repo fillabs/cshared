@@ -183,3 +183,53 @@ cnode_t *  _ctree_splay_del (cnode_t ** proot, ctree_compare_fn* comparator, con
     }
     return x;
 }
+
+static int __inorder(cnode_t  * x, int height, ctree_walk_fn * cb, void * const user)
+{
+    int rc = 0;
+    if(x) {
+        int rc = cb(x, height, user);
+        if(rc >= 0){
+            int n = __inorder(x->childs[0], height + 1, cb, user);
+            if (n >=0) {
+                rc += n;
+                n = __inorder(x->childs[1], height + 1, cb, user);
+                if (n >=0) {
+                    return rc + n;
+                }
+            }
+            rc = n;
+        }
+    }
+    return rc;
+}
+
+static int __preorder(cnode_t  * x, int height, ctree_walk_fn * cb, void * const user)
+{
+    int rc = 0;
+    if(x) {
+        int rc = __preorder(x->childs[0], height + 1, cb, user);
+        if(rc >= 0){
+            int n = cb(x, height, user);
+            if (n >=0) {
+                rc += n;
+                n = __preorder(x->childs[1], height + 1, cb, user);
+                if (n >=0) {
+                    return rc + n;
+                }
+            }
+            rc = n;
+        }
+    }
+    return rc;
+}
+
+int _ctree_splay_walk_preorder(cnode_t  * x, ctree_walk_fn * cb, void * const user)
+{
+    return __preorder(x, 0, cb, user);
+}
+
+int _ctree_splay_walk_inorder(cnode_t  * x, ctree_walk_fn * cb, void * const user)
+{
+    return __inorder(x, 0, cb, user);
+}

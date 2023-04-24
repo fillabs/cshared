@@ -56,6 +56,14 @@ void printTree(Node * n)
     printf("\n");
 }
 
+int print_node(cnode_t * n, int height, void * const user)
+{
+    while(height--)
+        printf("   ");
+    printf("%d\n", ((Node*)n)->key);
+    return 0; 
+}
+
 int main(int argc, char ** argv){
 
     cnode_t * root = NULL;
@@ -93,7 +101,7 @@ int main(int argc, char ** argv){
     r = (Node*)ctree_splay_find(&root, NodeCompare, &n);
     assert( r  == 0 );
     printTree((Node*)root);
-
+/*
     n.key = 89;
     r = (Node*)ctree_splay_del(&root, NodeCompare, &n);
     assert( r && 0 == NodeCompare(r, &n)); free(r);
@@ -131,6 +139,12 @@ int main(int argc, char ** argv){
     n.key = 33;
     r = (Node*)ctree_splay_del(&root, NodeCompare, &n);
     assert( r && 0 == NodeCompare(r, &n)); free(r);
+*/
+    printf("in order:\n");
+    ctree_splay_walk_inorder(root, print_node, NULL);
+
+    printf("pre order:\n");
+    ctree_splay_walk_preorder(root, print_node, NULL);
 
     return 0;
 }

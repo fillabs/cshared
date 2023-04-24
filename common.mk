@@ -229,7 +229,7 @@ cleandocs:
 	rm -rf doc/html
 endif
 
-ifneq(,$(INSTALLROOT))
+ifneq (,$(INSTALLROOT))
 
 install: $(INSTALLROOT) 
 ifneq (,$(strip $(binnames)))
