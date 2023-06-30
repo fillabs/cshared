@@ -158,6 +158,13 @@ FN_THROW(RuntimeException) void   _coer_write_open_type_end(char* b, char** cons
 #define coer_write_sequenceof_do(N,PTR,END,ERROR) for(char * __ ## N ## _begin = _coer_write_sequenceof_count(0, PTR, END, ERROR); __ ## N ## _begin; __ ## N ## _begin = NULL)
 #define coer_write_sequenceof_end(N,COUNT,END,ERROR) do { _coer_write_sequenceof_end(__ ## N ## _begin, COUNT,END,ERROR);}while(0)
 
+#define coer_write_sequenceof(N,PTR,END,ERROR) \
+	for(struct { size_t count; char * begin; } __ ## N ## _data = {0, _coer_write_sequenceof_count(0, PTR, END, ERROR)}; \
+        __ ## N ## _data.begin; \
+        _coer_write_sequenceof_end(__ ## N ## _data.begin, __ ## N ## _data.count, END, ERROR), \
+		__ ## N ## _data.begin = NULL \
+	)
+#define set_sequenceof_count(N, COUNT) do { __ ## N ## _data.count = COUNT; }while(0)
 #ifdef __cplusplus
 }
 #endif
