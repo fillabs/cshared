@@ -135,6 +135,17 @@ void      cring_cleanup(cring_t * const r, void * const fn_destructor)
     }
 }
 
+void      cring_cleanup_D(cring_t * const r, void * const fn_destructor, const char * const F, int L)
+{
+    while(r->next != r){
+        cring_t * x = r->next;
+        _cring_erase(x);
+        if(fn_destructor){
+            ((void(*)(void*, const char*, int))fn_destructor)(x, F, L);
+        }
+    }
+}
+
 cring_t * _cring_insert_sorted(cring_t * const r, cring_t * const n, cring_compare_fn * const fn_compare)
 {
 	cring_t * i = r->next;

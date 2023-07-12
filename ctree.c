@@ -75,18 +75,17 @@ cnode_t * _ctree_splay_add (cnode_t ** proot, ctree_compare_fn* comparator, cnod
     // insert node
     cnode_t * x = *proot;
     cnode_t * y = NULL;
-    cnode_t * ret = n;
 	int l;
     
     while (x != NULL) {
         if (x == n)
             return n;
 		y = x;
-        l = comparator(n, y);
-        if (l == 0) { // equal. return previous value
+        l = comparator(y, n);
+        if (l == 0) { // equal. 
+            __splay(x);
             if (replace) {
-                __splay(x);
-                *n = *x;              
+                *n = *x;
                 if(x->childs[1]){
                     x->childs[1]->parent = n;
                 }
@@ -95,12 +94,13 @@ cnode_t * _ctree_splay_add (cnode_t ** proot, ctree_compare_fn* comparator, cnod
                 }
                 n->parent = NULL;
                 *proot = n;
-                return x;
-            } else {
-                return NULL;
+            }else{
+                *proot = x;
             }
+            // return previous value
+            return x;
         } else {
-            l = (l>0);
+            l = (l<0);
         }
         x = x->childs[l];
     }
@@ -114,24 +114,24 @@ cnode_t * _ctree_splay_add (cnode_t ** proot, ctree_compare_fn* comparator, cnod
         __splay(n);
     }
     *proot = n;
-    return ret;
+    return n;
 }
 
-static cnode_t * __find(cnode_t * x, ctree_compare_fn* comparator, const cnode_t * w)
+static cnode_t * __find(cnode_t * x, ctree_compare_fn* comparator, const void * w)
 {
     while(x) {
         if(x == w)
             break;
-        int l = comparator(w, x);
+        int l = comparator(x, w);
         if(l == 0)
             break;
-        l = (l>0);
+        l = (l<0);
         x = x->childs[l];
     };
     return x;
 }
 
-cnode_t * _ctree_splay_find (cnode_t ** proot, ctree_compare_fn* comparator, const cnode_t * w)
+cnode_t * _ctree_splay_find (cnode_t ** proot, ctree_compare_fn* comparator, const void * w)
 {
     cnode_t * x;
     x = __find(*proot, comparator, w);
@@ -154,9 +154,6 @@ static inline cnode_t * __lastElement(cnode_t * x, int is_right)
 
 static cnode_t * __join(cnode_t * s, cnode_t * t)
 {
-    if (s == NULL) return t;
-    if (t == NULL) return s;
-
 	s = __max(s);
 	__splay(s);
 	s->childs[1] = t;
@@ -164,22 +161,43 @@ static cnode_t * __join(cnode_t * s, cnode_t * t)
 	return s;
 }
 
-cnode_t *  _ctree_splay_del (cnode_t ** proot, ctree_compare_fn* comparator, const cnode_t * w)
+static cnode_t * __join_childs(cnode_t * x)
+{
+    cnode_t * o;
+    if(NULL == x->childs[1]){
+        o = x->childs[0];
+        x->childs[0] = NULL;
+    }else if(NULL == x->childs[0]){
+        o = x->childs[1];
+        x->childs[1] = NULL;
+    }else{
+        x->childs[0]->parent = NULL;
+        x->childs[1]->parent = NULL;
+        o = __join(x->childs[0], x->childs[1]);
+        x->childs[0] = x->childs[1] = NULL;
+    }
+    return o;
+}
+
+cnode_t *  _ctree_splay_del (cnode_t ** proot, ctree_compare_fn* comparator, const void * w)
 {
     cnode_t * x = __find(*proot, comparator, w);
     if(x) {
 		__splay(x);
+        *proot = __join_childs(x);
+    }
+    return x;
+}
 
-        if(x->childs[1]){
-            x->childs[1]->parent = NULL;
-        }
-
-		if (x->childs[0]){
-            x->childs[0]->parent = NULL;
-        }
-
-        *proot = __join(x->childs[0], x->childs[1]);
-        x->childs[0] = x->childs[1] = NULL;
+cnode_t *  ctree_splay_del_node (cnode_t ** proot, cnode_t *x)
+{
+    cnode_t * p = x->parent;
+    cnode_t * j = __join_childs(x);
+    if(p == NULL){
+        *proot = j;
+    }else{
+        if(p->childs[0] == x) p->childs[0] = j;
+        else                  p->childs[1] = j;
     }
     return x;
 }
@@ -232,4 +250,84 @@ int _ctree_splay_walk_preorder(cnode_t  * x, ctree_walk_fn * cb, void * const us
 int _ctree_splay_walk_inorder(cnode_t  * x, ctree_walk_fn * cb, void * const user)
 {
     return __inorder(x, 0, cb, user);
+}
+/*
+inline static cnode_t * __swap( cnode_t ** p, cnode_t * n)
+{
+    cnode_t * ret = *p;
+    *p = n;
+    return ret;
+}
+*/
+#define node_swap(P, N) cmem_swap(P, N)
+
+void    ctree_clean(cnode_t ** root, ctree_walk_fn * cb, void * const user)
+{
+    cnode_t * x = *root;
+    int height = 0;
+    while(x){
+        if(x->childs[0]){
+            height ++;
+            x = node_swap(&x->childs[0], NULL);
+        }else if(x->childs[1]){
+            height ++;
+            x = node_swap(&x->childs[1], NULL);
+        }else{
+            cnode_t * n = x;
+            x = node_swap(&x->parent, NULL);
+            cb(n, height, user);
+            height --;
+        }
+    }
+    *root = NULL;
+}
+
+void    ctree_filter(cnode_t ** root, ctree_walk_fn * filter,  ctree_walk_fn * free, void * const user)
+{
+    cnode_t * x = *root;
+    int height = 0;
+    cnode_t *o = x;
+    while(x){
+        if(o == x){
+            if(x->childs[0]){
+                o = x = x->childs[0];
+                height++;
+                continue;
+            }
+            if(x->childs[1]){
+                o = x = x->childs[1];
+                height++;
+                continue;
+            }
+        }else{
+            if(o == x->childs[0]){
+                // back from left
+                if(x->childs[1]){
+                    o = x = x->childs[1];
+                    height++;
+                    continue;
+                }
+            }
+            o = x;
+        }
+        // call cb
+        x = x->parent;
+        if(0 == filter(o, height, user)){
+            cnode_t * j = __join_childs(o);
+            if(j) j->parent = x;
+            if(x){
+                if(x->childs[0] == o)
+                    x->childs[0] = j;
+                else 
+                    x->childs[1] = j;
+            }else{
+                *root = j;
+            }
+            if(free){
+                free(o, height, user);
+            }
+            o = NULL;
+        }
+        height--;
+    }
 }

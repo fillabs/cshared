@@ -15,8 +15,10 @@
 #define callocate(N)  malloc(N)
 #define callocate0(N) calloc(1,N)
 #define cfree(P)      free(P)
-#define cnew(T)     (T*)callocate(sizeof(T))
-#define cnew0(T)    (T*)callocate0(sizeof(T))
+#define cnew(TYPE)     (TYPE*)callocate(sizeof(TYPE))
+#define cnew0(TYPE)    (TYPE*)callocate0(sizeof(TYPE))
+#define cnew_ex(TYPE, EXT)     (TYPE*)callocate(sizeof(TYPE)+(EXT))
+#define cnew0_ex(TYPE, EXT)    (TYPE*)callocate0(sizeof(TYPE)+(EXT))
 typedef void(cdestructor_fn)(void*);
 
 /** Add X to *P and return old (*P) value

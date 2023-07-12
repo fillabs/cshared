@@ -115,34 +115,50 @@ ifeq ($(testdir), )
   testdir := tests
 endif
 
-includes  += $(foreach cfg,$(CFG),$(includes-$(cfg)))
-defines   += $(foreach cfg,$(CFG),$(defines-$(cfg)))
-libs      += $(foreach cfg,$(CFG),$(libs-$(cfg)))
-sources   += $(foreach cfg,$(CFG),$(sources-$(cfg))) 
-headers   += $(foreach cfg,$(CFG),$(headers-$(cfg)))
-tests     += $(foreach cfg,$(CFG),$(tests-$(cfg)))
-distfiles += $(foreach cfg,$(CFG),$(distfiles-$(cfg)))
-predirs   += $(foreach cfg,$(CFG),$(predirs-$(cfg)))
-postdirs  += $(foreach cfg,$(CFG),$(postdirs-$(cfg)))
+all_includes  := $(includes)  $(foreach cfg,$(CFG),$(includes-$(cfg)))
+all_defines   := $(defines)   $(foreach cfg,$(CFG),$(defines-$(cfg)))
+all_libs      := $(libs)      $(foreach cfg,$(CFG),$(libs-$(cfg)))
+all_sources   := $(sources)   $(foreach cfg,$(CFG),$(sources-$(cfg))) 
+all_headers   := $(headers)   $(foreach cfg,$(CFG),$(headers-$(cfg)))
+all_tests     := $(tests)     $(foreach cfg,$(CFG),$(tests-$(cfg)))
+all_distfiles := $(distfiles) $(foreach cfg,$(CFG),$(distfiles-$(cfg)))
+all_predirs   := $(predirs)   $(foreach cfg,$(CFG),$(predirs-$(cfg)))
+all_postdirs  := $(postdirs)  $(foreach cfg,$(CFG),$(postdirs-$(cfg)))
+
+define IncludeModule
+undefine sources
+undefine modules
+undefine includes
+undefine defines
+undefine distfiles
+include $(1)/module.mk
+$$(foreach V, $$(sources),   $$(eval all_sources +=  $$(if $$(filter /%, $$(V)), $$(TOPDIR)$$(V), $(1)/$$(V))))
+$$(foreach V, $$(includes),  $$(eval all_includes += $$(if $$(filter /%, $$(V)), $$(TOPDIR)$$(V), $(1)/$$(V))))
+$$(foreach V, $$(modules),   $$(eval $$(call IncludeModule, $$(if $$(filter /%, $$(V)), $$(TOPDIR)$$(V), $(1)/$$(V)))))
+all_defines += $$(defines)
+$$(foreach V, $$(distfiles), $$(eval all_distfiles += $$(if $$(filter /%, $$(V)), $$(TOPDIR)$$(V), $(1)/$$(V))))
+endef
+
+$(foreach V, $(modules), $(eval $(call IncludeModule, $(V))))
 
 tests     := $(addprefix $(addsuffix /,$(testdir)),$(tests))
-sources   := $(addprefix $(addsuffix /,$(srcdir)),$(sources))
-headers   := $(addprefix $(addsuffix /,$(incdir)),$(headers))
-
-cflags    += $(addprefix -I, $(includes)) $(addprefix -D, $(defines))
+sources   := $(addprefix $(addsuffix /,$(srcdir)),$(all_sources))
+headers   := $(addprefix $(addsuffix /,$(incdir)),$(all_headers))
+distfiles := $(all_distfiles)
+cflags += $(addprefix -I, $(all_includes)) $(addprefix -D, $(all_defines))
 
 ifeq ($(BUILDROOT),)
  BUILDROOT = .
 endif
 
-outdir    := $(BUILDROOT)/$(ARCH)$(dsuffix)
-objdir    := $(outdir)/o-$(PROJECT)
-objects   := $(patsubst %.c, $(objdir)/%.o, $(sources))
+outdir     := $(BUILDROOT)/$(ARCH)$(dsuffix)
+objdir     := $(outdir)/o-$(PROJECT)
+objects    := $(patsubst %.c, $(objdir)/%.o, $(all_sources))
 $(foreach b,$(bins),$(eval objects-$(b)=$$(patsubst %.c,$$(objdir)/%.o,$$(sources-$(b)))))
 
-binobjects:= $(patsubst %.c, $(objdir)/%.o, $(foreach b,$(bins),$(sources-$(b)))) 
-testbins  := $(patsubst %.c, $(outdir)/%, $(tests))
-dirs      := $(objdir) $(outdir)/tests
+binobjects := $(foreach b,$(bins),$(objects-$(b))) 
+testbins   := $(patsubst %.c, $(outdir)/%, $(tests))
+dirs       := $(objdir) $(outdir)/tests
 
 alibnames  := $(patsubst %, $(outdir)/lib%.a,  $(alibs))
 solibnames := $(patsubst %, $(outdir)/lib%.so, $(solibs))

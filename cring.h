@@ -83,6 +83,10 @@ struct cring_t
 #endif
 #endif
 
+#ifndef arraysize
+#define arraysize(A) (sizeof(A)/sizeof(A[0]))
+#endif
+
 /** Cast the pointer to the member of structure to the pointer
     to the base structure.
  * @param TYPE   Base structure type.
@@ -231,6 +235,7 @@ size_t    cring_count(const cring_t * const r);
 /** Cleanup the ring, calling destructor for each element.
  * @param r The root element of the ring. */
 void      cring_cleanup(cring_t * const r, void * const fn_destructor);
+void      cring_cleanup_D(cring_t * const r, void * const fn_destructor, const char * const F, int L);
 
 typedef int cring_compare_fn(void * const p1, void * const p2);
 
