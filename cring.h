@@ -250,7 +250,7 @@ cring_t * cring_zinsert_after (cring_t * * const root, cring_t * const i);
 cring_t * cring_zinsert_before(cring_t * * const root, cring_t * const i);
 void      cring_zcleunup( cring_t * * const root, void * const fn_destructor);
 
-#define cring_foreach(T,e,R) for(T*e=*((T**)(R)); e != (T*)(R); e = cring_next_cast(e,T))
+#define cring_foreach(TYPE, e, ROOT) for(TYPE*e=cring_first_cast(ROOT,TYPE); e != (TYPE*)&(ROOT); e = cring_next_cast(e,TYPE))
 
 #define XRING_PREALLOC 16
 

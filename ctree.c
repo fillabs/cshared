@@ -261,7 +261,7 @@ inline static cnode_t * __swap( cnode_t ** p, cnode_t * n)
 */
 #define node_swap(P, N) cmem_swap(P, N)
 
-void    ctree_clean(cnode_t ** root, ctree_walk_fn * cb, void * const user)
+void    _ctree_clean(cnode_t ** root, ctree_walk_fn * cb, void * const user)
 {
     cnode_t * x = *root;
     int height = 0;
@@ -282,7 +282,7 @@ void    ctree_clean(cnode_t ** root, ctree_walk_fn * cb, void * const user)
     *root = NULL;
 }
 
-void    ctree_filter(cnode_t ** root, ctree_walk_fn * filter,  ctree_walk_fn * free, void * const user)
+void    _ctree_filter(cnode_t ** root, ctree_walk_fn * filter,  ctree_walk_fn * free, void * const user)
 {
     cnode_t * x = *root;
     int height = 0;
@@ -330,4 +330,36 @@ void    ctree_filter(cnode_t ** root, ctree_walk_fn * filter,  ctree_walk_fn * f
         }
         height--;
     }
+}
+
+const cnode_t * _ctree_next_node_up(const cnode_t * l, const cnode_t ** px)
+{
+    const cnode_t * x = *px;
+    if (x == NULL){
+        return NULL;
+    }
+    while (x) {
+        if (l == x){
+            if (x->childs[0]) {
+                l = x = x->childs[0];
+                continue;
+            }
+            if (x->childs[1]) {
+                l = x = x->childs[1];
+                continue;
+            }
+        }else{
+            if (l == x->childs[0]){
+                // back from left
+                if (x->childs[1]){
+                    l = x = x->childs[1];
+                    continue;
+                }
+            }
+            l = x;
+        }
+        *px = x->parent;
+        break;
+    }
+    return l;
 }
