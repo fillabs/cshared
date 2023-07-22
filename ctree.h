@@ -118,6 +118,8 @@ int        _ctree_splay_walk_preorder(cnode_t  * root, ctree_walk_fn * cb, void 
 void    _ctree_clean(cnode_t ** root, ctree_walk_fn * cb, void * const user);
 /**@}*/
 
+void ctree_splay(cnode_t * n);
+
 /** @brief Filter tree using given _filter_ function.
  * 
  *  @param root Pointer to the tree head.

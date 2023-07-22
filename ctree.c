@@ -70,6 +70,12 @@ static void __splay(cnode_t * x){
     }
 }
 
+void ctree_splay(cnode_t * n)
+{
+    __splay(n);
+}
+
+
 cnode_t * _ctree_splay_add (cnode_t ** proot, ctree_compare_fn* comparator, cnode_t * n, int replace)
 {
     // insert node
