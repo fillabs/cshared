@@ -164,11 +164,18 @@ struct cring_t
 void      _cring_init  ( cring_t * const r );
 #define    cring_init(R) _cring_init((cring_t*)(R))
 
-/** Remove the element from the ring and initialize it as an amty ring.
+/** Remove the element from the ring and initialize it as an empty ring.
  * @return The element following the removed one.
 */
-cring_t * _cring_erase ( cring_t * const r );
-#define    cring_erase(R) _cring_erase((cring_t*)(R))
+cring_t * _cring_erase_right ( cring_t * const r );
+#define    cring_erase_right(R) _cring_erase_right((cring_t*)(R))
+#define    cring_erase(R) _cring_erase_right((cring_t*)(R))
+
+/** Remove the element from the ring and initialize it as an empty ring.
+ * @return The element preceding the removed one.
+*/
+cring_t * _cring_erase_left ( cring_t * const r );
+#define    cring_erase_left(R) _cring_erase_left((cring_t*)(R))
 
 /** Insert the element in the ring after the specified one.
  * @param r The existing element in the ring.

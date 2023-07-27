@@ -17,7 +17,7 @@ void      _cring_init( cring_t * const r )
     r->prev = r;
 }
 
-cring_t * _cring_erase( cring_t * const x )
+cring_t * _cring_erase_right( cring_t * const x )
 {
     cring_t * n = x->next;
     cring_t * p = x->prev;
@@ -28,12 +28,23 @@ cring_t * _cring_erase( cring_t * const x )
     return n;
 }
 
+cring_t * _cring_erase_left( cring_t * const x )
+{
+    cring_t * n = x->next;
+    cring_t * p = x->prev;
+    n->prev = p;
+    p->next = n;
+    x->next = x;
+    x->prev = x;
+    return p;
+}
+
 cring_t * _cring_pop(cring_t * const x)
 {
 	cring_t * n = x->next;
 	if (n == x)
 		return NULL;
-	_cring_erase(n);
+	_cring_erase_right(n);
 	return n;
 }
 
@@ -97,7 +108,7 @@ cring_t * _cring_erase_ring( cring_t * const f, cring_t * const l)
     cring_t *p, *n;
 
     if(f == l){
-        return _cring_erase(f);
+        return _cring_erase_right(f);
     }
 
     p = f->prev;
@@ -128,7 +139,7 @@ void      cring_cleanup(cring_t * const r, void * const fn_destructor)
 {
     while(r->next != r){
         cring_t * x = r->next;
-        _cring_erase(x);
+        _cring_erase_right(x);
         if(fn_destructor){
             ((void(*)(void*))fn_destructor)(x);
         }
@@ -139,7 +150,7 @@ void      cring_cleanup_D(cring_t * const r, void * const fn_destructor, const c
 {
     while(r->next != r){
         cring_t * x = r->next;
-        _cring_erase(x);
+        _cring_erase_right(x);
         if(fn_destructor){
             ((void(*)(void*, const char*, int))fn_destructor)(x, F, L);
         }
@@ -183,7 +194,7 @@ cring_t * cring_zerase( cring_t * * const root, cring_t * const r )
     if(*root == r){
         *root = r->next;
     }
-    return _cring_erase(r);
+    return _cring_erase_right(r);
 }
 
 cring_t * cring_zinsert_after (cring_t * * const root, cring_t * const i)
@@ -237,7 +248,7 @@ void cring_zcleunup( cring_t * * const root, void * const fn_destructor)
         *root = NULL;
         do{
             cring_t * n = r->next;
-            _cring_erase(r);
+            _cring_erase_right(r);
             if(fn_destructor){
                 ((void(*)(void*))fn_destructor)(r);
             }
@@ -271,7 +282,7 @@ xcring_t * xcring_new (void * const data)
         r->prev = r;
     }else{
         r = (xcring_t *)__xcring_pool.next;
-        _cring_erase( __xcring_pool.next );
+        _cring_erase_right( __xcring_pool.next );
     }
     r->data = data;
     return r;
@@ -292,7 +303,7 @@ void       xcring_cleanup(cring_t * const root, void * const fn_destructor)
 {
     while(!cring_is_empty(root)){
         xcring_t * r = (xcring_t *)root->next;
-        _cring_erase(root->next);
+        _cring_erase_right(root->next);
         xcring_free(r, fn_destructor);
     }
 }
@@ -314,7 +325,7 @@ void * xcring_dequeue(cring_t * const root)
     }
 
     r = (xcring_t*)root->next;
-    _cring_erase((cring_t*)r);
+    _cring_erase_right((cring_t*)r);
     data=r->data;
     r->data = NULL;
     _cring_insert_after( &__xcring_pool, (cring_t *) r);

@@ -161,6 +161,18 @@ __inline static void * cmemzero(void * const dst, size_t len) {
 	return cmemset(dst, 0, len);
 }
 
+__inline static int cmemcmp(const void * const m1, const void * const m2, size_t size) {
+	if(m1 != m2){
+		if(m1){
+			if(m2)
+				return memcmp(m1, m2, size);
+			return 1;
+		}
+		return -1;
+	}
+	return 0;
+}
+
 __inline static void * _cretain(void*p, int*prcntr) {
 	if (*prcntr != 0){
 		cinc_and_fetch(prcntr);
