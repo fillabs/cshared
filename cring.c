@@ -27,6 +27,8 @@ cring_t * _cring_erase_right( cring_t * const x )
     x->prev = x;
     return n;
 }
+cring_t * _cring_erase( cring_t * const x )
+{ return _cring_erase_right(x);}
 
 cring_t * _cring_erase_left( cring_t * const x )
 {

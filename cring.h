@@ -168,6 +168,8 @@ void      _cring_init  ( cring_t * const r );
  * @return The element following the removed one.
 */
 cring_t * _cring_erase_right ( cring_t * const r );
+// to keep compatibility
+cring_t * _cring_erase ( cring_t * const r );
 #define    cring_erase_right(R) _cring_erase_right((cring_t*)(R))
 #define    cring_erase(R) _cring_erase_right((cring_t*)(R))
 
