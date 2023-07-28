@@ -122,15 +122,25 @@ void ctree_splay(cnode_t * n);
 
 /** @brief Filter tree using given _filter_ function.
  * 
+ *  - _ctree_filter_up_ traverse the tree from the leafs to the root,
+ *    while the _ctree_filter_down_ traverse it from the root to leafs.
+
  *  @param root Pointer to the tree head.
- *  @param filter Function to be called for each node. Function shall return non-zero to keep the node in the tree, or zero to delete it.
- *  @param cb Call-back function to be called for each deleted node. The _cb_ return value is ignored. Set it to NULL if not needed. 
+ *  @param filter Function to be called for each node.
+ *         Function shall return positive value to keep the node in the tree, zero to delete it
+ *         or negative value to delete a full sub-tree.
+ *  @param cb Call-back function to be called for each deleted node.
+ *         The _cb_ return value is ignored. Set it to NULL if not needed. 
  *  @param user Any user pointer to be passed to the _filter_ and _cb_ functions as a _user_ argument.
  *  @defgroup ctree_filter
  */
 /**@{*/
-#define ctree_filter(root, filter, cb, user) _ctree_filter(root, (ctree_walk_fn*) filter,  (ctree_walk_fn*) cb,  user)
+#define ctree_filter_up(root, filter, cb, user) _ctree_filter(root, (ctree_walk_fn*) filter,  (ctree_walk_fn*) cb,  user)
+#define ctree_filter(root, filter, cb, user) ctree_filter_up(root, filter, cb, user)
 void    _ctree_filter(cnode_t ** root, ctree_walk_fn * filter, ctree_walk_fn * cb, void * const user);
+
+#define ctree_filter_down(root, filter, cb, user) _ctree_filter_down(root, (ctree_walk_fn*) filter,  (ctree_walk_fn*) cb,  user)
+void     _ctree_filter_down (cnode_t ** root, ctree_walk_fn * filter,  ctree_walk_fn * free, void * const user);
 /**@}*/
 
 /** @brief Traverse the tree in-place without call-backs.
@@ -146,9 +156,15 @@ void    _ctree_filter(cnode_t ** root, ctree_walk_fn * filter, ctree_walk_fn * c
  *  }
  *  @endcode
  */
-#define ctree_foreach(ROOT,n) for(const cnode_t * __last_ ## n = ROOT, *n = _ctree_next_node_up(ROOT, &__last_ ## n); n; n = _ctree_next_node_up(n, &__last_ ## n))
+/**@{*/
+#define ctree_foreach_up(ROOT,n) for(const cnode_t * __last_ ## n = ROOT, *n = _ctree_next_node_up(ROOT, &__last_ ## n); n; n = _ctree_next_node_up(n, &__last_ ## n))
+#define ctree_foreach(ROOT,n) ctree_foreach_up(ROOT,n)
+
+#define ctree_foreach_down(ROOT,n) for(const cnode_t * __last_ ## n = ROOT, *n = _ctree_next_node_down(ROOT, &__last_ ## n); n; n = _ctree_next_node_down(n, &__last_ ## n))
+/**@}*/
 /** @internal */
 const cnode_t * _ctree_next_node_up(const cnode_t * p, const cnode_t ** px);
+const cnode_t * _ctree_next_node_down(const cnode_t * p, const cnode_t ** px);
 /** @endinternal */
 
 #ifdef __cplusplus

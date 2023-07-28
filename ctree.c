@@ -369,3 +369,75 @@ const cnode_t * _ctree_next_node_up(const cnode_t * l, const cnode_t ** px)
     }
     return l;
 }
+
+void _ctree_filter_down (cnode_t ** root, ctree_walk_fn * filter,  ctree_walk_fn * free, void * const user)
+{
+    cnode_t * x = *root;
+    int height = 0;
+    cnode_t *o = x;
+    while(x){
+        if(o == x){
+            // check this node
+            int rc = filter(x, height, user);
+            if(rc > 0){
+                // keep node
+                // continue traverse
+                if(x->childs[0]){
+                    // go down left
+                    o = x = x->childs[0];
+                    height++;
+                    continue;
+                }
+                if(x->childs[1]){
+                    // go down right
+                    o = x = x->childs[1];
+                    height++;
+                    continue;
+                }
+                // no more childs
+                // go up but keep 'o' pointing to the node
+            }else{
+                //remove node or subtree
+                cnode_t * j = NULL;
+                if(rc == 0){
+                    // remove node
+                    j = __join_childs(o);
+                }
+                x = x->parent;
+                if(x){
+                    x->childs[__is_right(o)] = NULL;
+                }else{
+                    *root = NULL;
+                }
+                o->parent = NULL;
+                if(free){
+                    if(rc==0){
+                        free(o, height, user);
+                    }else{
+                        _ctree_clean(&o, free, user);
+                    }
+                }
+                o = NULL;
+                continue;
+            }
+        }else{
+            if(o == x->childs[0]){
+                // back from left
+                if(x->childs[1]){
+                    o = x = x->childs[1];
+                    height++;
+                    continue;
+                }
+            }
+            o = x;
+        }
+        x = x->parent;
+        height--;
+    }
+}
+
+const cnode_t * _ctree_next_node_down(const cnode_t * l, const cnode_t ** px)
+{
+    // TODO: implement it
+    return _ctree_next_node_up(l, px);
+}

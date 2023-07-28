@@ -72,6 +72,12 @@ int free_node(const cnode_t * n, int height, void * const user)
     return 0; 
 }
 
+int _height_less_3(const cnode_t * n, int height, void * const user)
+{
+    print_node(n, height, user);
+    return (height < 3);
+}
+
 int main(int argc, char ** argv){
 
     cnode_t * root = NULL;
@@ -151,8 +157,23 @@ int main(int argc, char ** argv){
     printf("in order:\n");
     ctree_splay_walk_inorder(root, print_node, NULL);
 
+    ctree_splay_add(&root, NodeCompare, (x=NodeNew(10)), 0);
+    ctree_splay_add(&root, NodeCompare, (x=NodeNew(90)),0);
+	ctree_splay_add(&root, NodeCompare, (x=NodeNew(20)),0);
+    ctree_splay_add(&root, NodeCompare, (x=NodeNew(80)),0);
+    ctree_splay_add(&root, NodeCompare, (x=NodeNew(30)), 0);
+    ctree_splay_add(&root, NodeCompare, (x=NodeNew(70)),0);
+	ctree_splay_add(&root, NodeCompare, (x=NodeNew(40)),0);
+    ctree_splay_add(&root, NodeCompare, (x=NodeNew(60)),0);
+    ctree_splay_add(&root, NodeCompare, (x=NodeNew(50)), 0);
+    ctree_splay_add(&root, NodeCompare, (x=NodeNew(51)),0);
+	ctree_splay_add(&root, NodeCompare, (x=NodeNew(39)),0);
+    ctree_splay_add(&root, NodeCompare, (x=NodeNew(100)),0);
+
     printf("pre order:\n");
-    ctree_splay_walk_preorder(root, print_node, NULL);
+    ctree_splay_walk_inorder(root, print_node, NULL);
+
+   ctree_splay_purge (&root, _height_less_3,  free_node, NULL);
 
     ctree_foreach(root,n){
         print_node(n, 0, NULL);
@@ -164,6 +185,8 @@ int main(int argc, char ** argv){
     ctree_foreach(root,n){
         print_node(n, 0, NULL);
     }
+
+    
 
     return 0;
 }
