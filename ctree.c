@@ -405,9 +405,9 @@ void _ctree_filter_down (cnode_t ** root, ctree_walk_fn * filter,  ctree_walk_fn
                 }
                 x = x->parent;
                 if(x){
-                    x->childs[__is_right(o)] = NULL;
+                    x->childs[__is_right(o)] = j;
                 }else{
-                    *root = NULL;
+                    *root = j;
                 }
                 o->parent = NULL;
                 if(free){
@@ -440,4 +440,40 @@ const cnode_t * _ctree_next_node_down(const cnode_t * l, const cnode_t ** px)
 {
     // TODO: implement it
     return _ctree_next_node_up(l, px);
+}
+
+const cnode_t * ctree_check_consistence(const cnode_t * root)
+{
+    const cnode_t * x = root;
+    const cnode_t *o = x;
+    while(x){
+        if(o == x){
+            // continue traverse
+            if(x->childs[0]){
+                // go down left
+                o = x = x->childs[0];
+                continue;
+            }
+            if(x->childs[1]){
+                // go down right
+                o = x = x->childs[1];
+                continue;
+            }
+            // no more childs
+            // go up but keep 'o' pointing to the node
+        }else{
+            if(o == x->childs[0]){
+                // back from left
+                if(x->childs[1]){
+                    o = x = x->childs[1];
+                    continue;
+                }
+            }else if(o != x->childs[1]){
+                return o;
+            }
+            o = x;
+        }
+        x = x->parent;
+    }    
+    return NULL;
 }

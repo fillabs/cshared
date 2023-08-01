@@ -167,6 +167,7 @@ const cnode_t * _ctree_next_node_up(const cnode_t * p, const cnode_t ** px);
 const cnode_t * _ctree_next_node_down(const cnode_t * p, const cnode_t ** px);
 /** @endinternal */
 
+const cnode_t * ctree_check_consistence(const cnode_t * root);
 #ifdef __cplusplus
 }
 #endif
