@@ -154,7 +154,7 @@ typedef struct coer_ot_t {
     size_t    size;
     uint8_t * buf;
 }coer_opentype_t;
-#define coer_read_ot_do(N, PTR, END, ERROR) for (coer_opentype_t N = {coer_read_length(PTR, END, ERROR | FSERR_SIZE),*(PTR)}; N.size != (size_t)-1; N.size = (size_t)-1)
+#define coer_read_ot_do(N, PTR, END, ERROR) for (coer_opentype_t N = {coer_read_length(PTR, END, ERROR | FSERR_SIZE),(uint8_t*)*(PTR)}; N.size != (size_t)-1; N.size = (size_t)-1)
 #define coer_read_open_type_do(N, PTR, END, ERROR) for (size_t __ ## N ## __ot_run=1,  N ## _size=coer_read_length(PTR, END, ERROR|FSERR_SIZE); __ ## N ## __ot_run; __ ## N ## __ot_run=0)
 #define coer_read_sequence_do(N, PTR, END, ERROR) for (uint8_t __ ## N ## __seq_run=1, N ## _presence_mask=coer_read_uint8(PTR, END, ERROR); __ ## N ## __seq_run; __ ## N ## __seq_run=0)
 #define coer_read_choice_do(N, PTR, END, ERROR) for (uint32_t  __ ## N ## __ch_run=1,  N ## _tag=coer_read_tag(PTR, END, ERROR); __ ## N ## __ch_run; __ ## N ## __ch_run=0)

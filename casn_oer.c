@@ -243,23 +243,15 @@ size_t coer_length_size(size_t len)
 
 size_t coer_read_length(const char ** const ptr, const char * const end, int error)
 {
-	uint8_t n;
 	size_t ret;
 	if (*ptr >= end) {
 		THROW_ERROR(EFAULT);
 		return (uint64_t)-1;
 	}
-	n = *(const uint8_t*)((*ptr)++);
+	ret = *(const uint8_t*)((*ptr)++);
 	
-	if(0 == (n & 0x80)) {
-		ret = n;
-	}
-	else {
-		ret = (size_t)_coer_read_int_with_length(n & 0x7F, ptr, end, error);
-		if ((*ptr) + ret > end) {
-			THROW_ERROR(EFAULT);
-			return (uint64_t)-1;
-	}
+	if(ret > 128) {
+		ret = (size_t)_coer_read_int_with_length(ret & 0x7F, ptr, end, error);
 	}
 	return ret;
 }
