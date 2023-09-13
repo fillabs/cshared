@@ -11,6 +11,14 @@
 #include <stddef.h>
 #include <setjmp.h>
 
+#if defined(__GNUC__)
+#define ATTR_NORETURN __attribute__((noreturn))
+#elif defined(MSC_VER)
+#define ATTR_NORETURN __declspec((noreturn))
+#else
+#define ATTR_NORETURN
+#endif
+
 /* Maximum number of nested `try` blocks */
 #ifndef E4C_MAX_FRAMES
 # define E4C_MAX_FRAMES 16
@@ -78,6 +86,6 @@ extern struct e4c_context{jmp_buf jump[E4C_MAX_FRAMES]; struct e4c_exception err
 extern int e4c_try(const char * file, int line);
 extern int e4c_hook(int is_catch);
 extern int e4c_extends(const struct e4c_exception_type * child, const struct e4c_exception_type * parent);
-extern void e4c_throw(const struct e4c_exception_type * exception_type, const char * file, int line, int err, const char * message);
+extern void e4c_throw(const struct e4c_exception_type * exception_type, const char * file, int line, int err, const char * message) ATTR_NORETURN;
 
 # endif
