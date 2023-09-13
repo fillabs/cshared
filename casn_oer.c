@@ -177,23 +177,44 @@ int  _coer_write_int(const int64_t n, char ** const ptr, const char * const end,
 	return _coer_write_uint((uint64_t)n, ptr, end, error);
 }
 
+static inline size_t _coer_bytecount(uint64_t v){
+	size_t len = 0;
+	do {
+		len ++;
+		v >>= 8;
+	}while(v);
+	return len;
+}
+
+size_t coer_length_size(size_t len)
+{
+	size_t l = 1;
+	if (len >= 128){
+		for(;len;l++){
+			len >>= 8;
+		}
+	}
+	return l;
+}
+
+
 int  _coer_write_uint(const uint64_t n, char ** const ptr, const char * const end, int error)
 {
-	size_t len = cintx_bytecount(n);
-	coer_write_length(len, ptr, end, error);
-	const unsigned char * s = (const unsigned char *)&n;
-	unsigned char * d = *(unsigned char **)ptr;
-	*ptr = (char*) d + len;
-#if	(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
-	len--;
-	for (size_t i = 0; i <= len; i++) {
-		d[i] = s[len - i];
+	char * plen = *ptr;
+	int l = _coer_bytecount(n);
+	if (plen + l >= end){
+		THROW_ERROR(ENOSPC);
+		return -1;
 	}
-#else
-	for (size_t i = 0; i < len; i++) {
-		d[i] = s[8 - len - i];
+	*plen = (char)l;
+
+	uint64_t v = n;
+	char * e = plen + l;
+	*ptr = e + 1;
+	for(; e > plen; e--){
+		*e = (char)v;
+		v >>= 8;
 	}
-#endif
 	return 0;
 }
 
@@ -233,14 +254,6 @@ static uint64_t _coer_read_int_with_length (const uint64_t nlen, const char ** c
 	return value;
 }
 
-size_t coer_length_size(size_t len)
-{
-	size_t l = 1;
-	if (len >= 128)
-		l += cintx_bytecount(len);
-	return l;
-}
-
 size_t coer_read_length(const char ** const ptr, const char * const end, int error)
 {
 	size_t ret;
@@ -266,7 +279,7 @@ int  _coer_write_length(const size_t len, char ** const ptr, const char * const 
 		return coer_write_int8(value, ptr, end, error);
 	}
 
-	l = cintx_bytecount(value);
+	l = _coer_bytecount(value);
 
 	p = (uint8_t *)*ptr;
 	e = p + l;
@@ -274,12 +287,12 @@ int  _coer_write_length(const size_t len, char ** const ptr, const char * const 
 		THROW_ERROR(ENOSPC);
 		return -1;
 	}
-	*p = l + 0x80;
 
-	while (p < e){
-		*(e--) = (uint8_t)(value & 0xFF);
+	while (e > p){
+		*(e--) = (uint8_t)value;
 		value >>= 8;
 	}
+	*p = l + 0x80;
 	*ptr = (char*) p + l + 1;
 	return 0;
 }
@@ -428,20 +441,28 @@ char* _coer_write_sequenceof_count(size_t n, char** ptr, const char* end, int er
 	return r;
 }
 
-void _coer_write_sequenceof_end(char* b, size_t n, const char* end, int error)
+void _coer_write_sequenceof_end(char* b, size_t n, char** const ptr, const char* end, int error)
 {
-	size_t len = cintx_bytecount(n);
-	if (len > 1) {
-		if ((b + n + 1 + len) > end) {
+	char * p = b;
+	char * e = *ptr;
+	coer_read_uint((const char**)&p, e, error );
+	uint64_t l = _coer_bytecount(n);
+	if( b+l+1 != p ){
+		size_t len = e-p;
+		char * np = b+l+1;
+		if(np + len > end){
 			THROW_ERROR(ENOSPC);
+			return;
 		}
-		memmove(b + 1 + len, b + 2, n);
-		coer_write_uint(n, &b, b + 1 + len, error);
+		memmove(np, p, len);
+		p = np;
+		*ptr = np + len;
 	}
-	else {
-		b[1] = (char)n;
-	}
-	*(b++) = (char)len;
+	do {
+		*(--p) = (char)n;
+		n >>= 8;
+	} while(n);
+	*b = (char)l;
 }
 
 char* _coer_write_open_type_length(size_t length, char** const ptr, const char* const end, int error)
@@ -454,15 +475,54 @@ char* _coer_write_open_type_length(size_t length, char** const ptr, const char* 
 void _coer_write_open_type_end(char * b, char** const ptr, const char* const end, int error)
 {
 	char* e = *ptr;
-	size_t len = e - b - 1;
-	if (len > 127) {
-		b[0] = (char)cintx_bytecount(len);
-		if (e + b[0] > end) {
-			THROW_ERROR(ENOSPC);
+	char * plen = b;
+	size_t owlen = coer_read_length((const char**)&b, e, error);
+	size_t len = e - b;
+	if (len != owlen) {
+		size_t onlen = b - plen;
+		char l = (char)coer_length_size(len);
+		if(l != onlen){
+			if (plen + len + l > end) {
+				THROW_ERROR(ENOSPC);
+			}
+			memmove(plen + l, b, len);
+			b = plen + l;
+			*ptr = b + len;
 		}
-		memmove(b + 1 + b[0], b + 1, len - 1);
-	}
-	else {
-		b[0] = (char)len;
+		if(l == 1){
+			plen[0] = len;
+		}else{
+			while(len){
+				*(--b) = (char)len;
+				len >>= 8;
+			}
+			plen[0] = 0x80 | (l-1);
+		}
 	}
 }
+/*
+char * _coer_write_sequenceof_begin (char ** ptr, const char * end, int error)
+{
+	char * plen = (*ptr);
+	plen[0] = 0x01; plen[1] = 0x00;
+	(*ptr) += 2;
+	return plen;
+}
+
+char * _coer_write_sequenceof_update(char * plen, char ** ptr, const char * end, int error)
+{
+	char * p = plen;
+	char * e = *ptr;
+	uint64_t count = coer_read_uint(&p, end, error) + 1;
+	if(0 == (count && 0xFF )){
+		if(e+1 >= end ){
+			THROW_ERROR(ENOSPC);
+			return NULL;
+		}
+		memmove(p+1, p, e-p);
+	}
+	_coer_write_uint(count, &plen, end, error);
+	return plen;
+}
+
+*/

@@ -71,7 +71,7 @@ void clog_fprintf(void * const f, int const level, const char * format, ...);
 #define clog_trace(FORMAT, ...)                 clog_l(CLOG_DEBUG,     FORMAT, ##__VA_ARGS__)
 #define fclog_trace(F,FORMAT, ...)              clog_fl(F, CLOG_DEBUG, FORMAT, ##__VA_ARGS__)
 #define mclog_trace(MODULE,FORMAT, ...)         clog_lm(#MODULE, CLOG_DEBUG, FORMAT, ##__VA_ARGS__)
-#define fmclog_debug(F, MODULE, FORMAT, ...)    clog_flm(F, #MODULE, CLOG_DEBUG, FORMAT, ##__VA_ARGS__)
+#define fmclog_trace(F, MODULE, FORMAT, ...)    clog_flm(F, #MODULE, CLOG_DEBUG, FORMAT, ##__VA_ARGS__)
 #else
 #define clog_trace(FORMAT, ...)                 do{}while(0)
 #define fclog_trace(F,FORMAT, ...)              do{}while(0)

@@ -173,12 +173,6 @@ int main(int argc, char ** argv){
     printf("pre order:\n");
     ctree_splay_walk_inorder(root, print_node, NULL);
 
-   ctree_splay_purge (&root, _height_less_3,  free_node, NULL);
-
-    ctree_foreach(root,n){
-        print_node(n, 0, NULL);
-    }
-
     ctree_clean(&root, free_node, NULL);
     assert(root == NULL);
 

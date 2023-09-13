@@ -47,7 +47,11 @@ char * cstrnstr(const char *str, size_t size, const char* s);
 /* allocate copy of the str */ 
 char * cstralloc(size_t size);
 char * cstrdup(const char * str);
+char * cstrdups(const char * str, size_t suffix);
 char * cstrndup(const char * str, size_t max_size);
+char * cstrndups(const char * str, size_t max_size, size_t suffix);
+char * cstrpdups(char ** p, const char * str, size_t suffix);
+char * cstrpndups(char ** p, const char * str, size_t max_size, size_t suffix);
 
 /* allocate new str and collect all paramaters */ 
 char * cvstrdup(const char * ptr, ...);
@@ -79,6 +83,8 @@ typedef char pchar_t;
 char * cstrnload(char * dst, size_t max_size, const pchar_t * path);
 /* load file content to the new allocated buffer, assign it to p and return pointer to the next byte after the buffer */
 char * cstraload(char ** p, const pchar_t * path);
+/* store data in the file. returns pointer to the end of the data.*/
+const char * cstrnsave(const char * data, size_t size, const pchar_t * path);
 
 /* return the last element of the path */
 const pchar_t * cstrlastpathelement(const pchar_t * str);

@@ -12,15 +12,16 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
+#include <ctype.h>
 #include "clog.h"
 #include "cmem.h"
 #include "cstr.h"
 #include "copts.h"
 
-#define CLOG_MAX_ITEM 10
+#define CLOG_MAX_ITEM 5
 typedef struct clog_item_t clog_item_t;
 
-static int _clog_handler_file(int idx, clog_level_t level, void* user, const char* buf, size_t len);
+static void _clog_handler_file(int idx, clog_level_t level, void* user, const char* buf, size_t len);
 
 typedef struct clog_item_t {
     clog_cb_fn* h;
@@ -82,7 +83,7 @@ clog_level_t clog_set_level(unsigned int const out_index, clog_level_t level)
         if (_out_count || out_index) {
             return (clog_level_t)-1;
         }
-        _clog_out_initialize(CLOG_INFO);
+        _clog_out_initialize(level);
     }
     if (level > _min_level) {
         _min_level = level;
@@ -104,7 +105,7 @@ void clog_set_level_name(clog_level_t level, const char * const name)
         _clog_lnames[level] = name;
 }
 
-int          clog_set_file_output(FILE* const out, clog_level_t level)
+int  clog_set_file_output(void* const out, clog_level_t level)
 {
     int idx = cfetch_and_inc(&_out_count);
     if (idx >= CLOG_MAX_ITEM) {
@@ -120,7 +121,8 @@ int          clog_set_file_output(FILE* const out, clog_level_t level)
     return idx;
 }
 
-int          clog_set_cb_output(clog_cb_fn* const out, void* const user, clog_level_t level)
+
+int  clog_set_cb_output(clog_cb_fn* const out, void* const user, clog_level_t level)
 {
     int idx = cfetch_and_inc(&_out_count);
     if (idx >= CLOG_MAX_ITEM) {
@@ -155,16 +157,15 @@ void clog_fprintf(void* const f, int const level, const char* format, ...)
         }
         for (unsigned int i = 0; i < _out_count; i++) {
             if (level >= _out[i].level) {
-                _out[i].h(i, level, _out[i].f, _buf, _len);
+                _out[i].h(i, level, _out[i].f, _buf, l);
             }
         }
     }
 }
 
-static int _clog_handler_file(int idx, clog_level_t level, void* user, const char* buf, size_t len)
+static  void _clog_handler_file(int idx, clog_level_t level, void* const user, const char* buf, size_t len)
 {
     fwrite(buf, 1, len, (FILE*)user);
-    return 0;
 }
 
 int clog_option(const copt_t* opt, const char* option, const copt_value_t* value)
@@ -178,7 +179,7 @@ int clog_option(const copt_t* opt, const char* option, const copt_value_t* value
                     clog_set_file_output(stdout, level);
                 }
                 else if (cstrequal(file, "stderr")) {
-                    clog_set_file_output(stdout, level);
+                    clog_set_file_output(stderr, level);
                 }
                 else {
                     const char* mode = "w";

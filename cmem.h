@@ -14,12 +14,13 @@
 #include <string.h>
 #define callocate(N)  malloc(N)
 #define callocate0(N) calloc(1,N)
-#define cfree(P)      free(P)
 #define cnew(TYPE)     (TYPE*)callocate(sizeof(TYPE))
 #define cnew0(TYPE)    (TYPE*)callocate0(sizeof(TYPE))
 #define cnew_ex(TYPE, EXT)     (TYPE*)callocate(sizeof(TYPE)+(EXT))
 #define cnew0_ex(TYPE, EXT)    (TYPE*)callocate0(sizeof(TYPE)+(EXT))
 typedef void(cdestructor_fn)(void*);
+
+static inline void cfree (void * p) { if(p) free(p); }
 
 /** Add X to *P and return old (*P) value
  * @param P pointer to the int variable

@@ -106,7 +106,7 @@ cnode_t * _ctree_splay_add (cnode_t ** proot, ctree_compare_fn* comparator, cnod
             // return previous value
             return x;
         } else {
-            l = (l<0);
+            l = (l<0) ? 1 : 0;
         }
         x = x->childs[l];
     }
@@ -131,7 +131,7 @@ static cnode_t * __find(cnode_t * x, ctree_compare_fn* comparator, const void * 
         int l = comparator(x, w);
         if(l == 0)
             break;
-        l = (l<0);
+        l = (l<0) ? 1 : 0;
         x = x->childs[l];
     };
     return x;
@@ -171,6 +171,7 @@ static cnode_t * __join_childs(cnode_t * x)
 {
     cnode_t * o;
     if(NULL == x->childs[1]){
+        if(NULL == x->childs[0]) return NULL;
         o = x->childs[0];
         x->childs[0] = NULL;
     }else if(NULL == x->childs[0]){
@@ -182,6 +183,7 @@ static cnode_t * __join_childs(cnode_t * x)
         o = __join(x->childs[0], x->childs[1]);
         x->childs[0] = x->childs[1] = NULL;
     }
+    o->parent = NULL;
     return o;
 }
 
@@ -191,6 +193,7 @@ cnode_t *  _ctree_splay_del (cnode_t ** proot, ctree_compare_fn* comparator, con
     if(x) {
 		__splay(x);
         *proot = __join_childs(x);
+        
     }
     return x;
 }
@@ -201,7 +204,8 @@ cnode_t *  ctree_splay_del_node (cnode_t ** proot, cnode_t *x)
     cnode_t * j = __join_childs(x);
     if(p == NULL){
         *proot = j;
-    }else{
+    }else {
+        if(j) j->parent = p;
         if(p->childs[0] == x) p->childs[0] = j;
         else                  p->childs[1] = j;
     }

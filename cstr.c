@@ -171,26 +171,82 @@ char * cstralloc(size_t size)
 {
 	return (char*)malloc((size+0x10)&(~0xF));
 }
-char * cstrdup(const char * str)
+
+
+char * cstrpdups(char ** p, const char * str, size_t suffix)
+{
+		char * ret = NULL;
+	size_t len = 0;
+	if(str){
+		len = strlen(str);
+		if(len){
+			ret = cstralloc(len + suffix);
+			memcpy(ret, str, len+1);
+		}
+	}
+	*p = ret;
+	return ret + len;
+}
+
+char * cstrpndups(char ** p, const char * str, size_t max_size, size_t suffix)
+{
+	char * ret = NULL;
+	size_t len = 0;
+	if(str){
+		len = strnlen(str, max_size);
+		if(len){
+			ret = cstralloc(len + suffix);
+			memcpy(ret, str, len);
+			ret[len] = 0;
+		}
+	}
+	*p = ret;
+	return ret+len;
+}
+
+char * cstrdups(const char * str, size_t suffix)
 {
 	char * ret = NULL;
 	if(str){
 		size_t len = strlen(str);
 		if(len){
-			ret = cstralloc(len);
+			ret = cstralloc(len + suffix);
 			memcpy(ret, str, len+1);
 		}
 	}
 	return ret;
 }
 
+char * cstrdup(const char * str)
+{
+	return cstrdups(str, 0);
+}
+
 char * cstrndup(const char * str, size_t max_size)
+{
+	return cstrndups(str, max_size, 0);
+}
+char * cstrndups(const char * str, size_t max_size, size_t suffix)
 {
 	char * ret = NULL;
 	if(str){
 		size_t len = strnlen(str, max_size);
 		if(len){
-			ret = cstralloc(len);
+			ret = cstralloc(len + suffix);
+			memcpy(ret, str, len);
+			ret[len] = 0;
+		}
+	}
+	return ret;
+}
+
+char * cstrndupn(const char * str, size_t max_size, size_t suffix)
+{
+	char * ret = NULL;
+	if(str){
+		size_t len = strnlen(str, max_size-suffix);
+		if(len){
+			ret = cstralloc(len + suffix);
 			memcpy(ret, str, len);
 			ret[len] = 0;
 		}
@@ -273,6 +329,20 @@ char * cstraload(char ** p, const pchar_t * path)
 					ret += len;
 				}
 			}
+		}
+		fclose(f);
+	}
+	return ret;
+}
+
+const char * cstrnsave(const char * data, size_t size, const pchar_t * path)
+{
+	const char * ret = NULL;
+	FILE * f = pchar_fopen(path, _PCH("wb"));
+	if (f){
+		size_t l = fwrite(data, 1, size, f);
+		if(l == size){
+			ret = data + size;
 		}
 		fclose(f);
 	}
@@ -370,42 +440,40 @@ char * cstr_bin2hex(char * hex, size_t hlen, const char * bin, size_t blen)
 
 void *cmemmem(const void *haystack, size_t n, const void *needle, size_t m)
 {
-        const unsigned char *y = (const unsigned char *)haystack;
-        const unsigned char *x = (const unsigned char *)needle;
+	const unsigned char *y = (const unsigned char *)haystack;
+	const unsigned char *x = (const unsigned char *)needle;
 
-        size_t j, k, l;
+	size_t j, k, l;
 
-        if (m > n || !m || !n)
-                return NULL;
+	if (m > n || !m || !n)
+		return NULL;
 
-        if (1 != m) {
-                if (x[0] == x[1]) {
-                        k = 2;
-                        l = 1;
-                } else {
-                        k = 1;
-                        l = 2;
-                }
+	if (1 != m) {
+		if (x[0] == x[1]) {
+			k = 2;
+			l = 1;
+		} else {
+			k = 1;
+			l = 2;
+		}
 
-                j = 0;
-                while (j <= n - m) {
-                        if (x[1] != y[j + 1]) {
-                                j += k;
-                        } else {
-                                if (!memcmp(x + 2, y + j + 2, m - 2)
-                                    && x[0] == y[j])
-                                        return (void *)&y[j];
-                                j += l;
-                        }
-                }
-        } else
-                do {
-                        if (*y == *x)
-                                return (void *)y;
-                        y++;
-                } while (--n);
+		j = 0;
+		while (j <= n - m) {
+			if (x[1] != y[j + 1]) {
+				j += k;
+			} else {
+				if (!memcmp(x + 2, y + j + 2, m - 2) && x[0] == y[j])
+					return (void *)&y[j];
+				j += l;
+			}
+		}
+	} else do {
+		if (*y == *x)
+			return (void *)y;
+		y++;
+	} while (--n);
 
-        return NULL;
+	return NULL;
 }
 
 char * cstrnstr(const char *str, size_t size, const char* s)
