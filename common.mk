@@ -17,6 +17,10 @@ else
  AR    := $(addprefix $(addsuffix -,$(ARCH)), ar)
 endif
 
+ifneq (,$(findstring cygwin,$(ARCH)))
+ STRIP := strip
+endif
+
 -include $(CSHAREDDIR)/arch/$(ARCH).mk
 
 ifneq ($(findstring w32,$(ARCH)),)
