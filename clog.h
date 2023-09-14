@@ -65,7 +65,7 @@ int          clog_set_cb_output(clog_cb_fn* const out, void * const user, clog_l
 #define fmclog_info(F, MODULE, FORMAT, ...)     clog_flm(F, #MODULE, CLOG_INFO,    FORMAT, ##__VA_ARGS__)
 #define fmclog_debug(F, MODULE, FORMAT, ...)    clog_flm(F, #MODULE, CLOG_DEBUG,   FORMAT, ##__VA_ARGS__)
 
-void clog_fprintf(void * const f, int const level, const char * format, ...);
+const char* clog_fprintf(void * const f, int const level, const char * format, ...);
 
 #if defined(DEBUG) && defined(TRACE)
 #define clog_trace(FORMAT, ...)                 clog_l(CLOG_DEBUG,     FORMAT, ##__VA_ARGS__)

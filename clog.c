@@ -139,7 +139,7 @@ int  clog_set_cb_output(clog_cb_fn* const out, void* const user, clog_level_t le
 }
 
 
-void clog_fprintf(void* const f, int const level, const char* format, ...)
+const char * clog_fprintf(void* const f, int const level, const char* format, ...)
 {
     if (!_out_count) {
         _clog_out_initialize(CLOG_INFO);
@@ -160,7 +160,9 @@ void clog_fprintf(void* const f, int const level, const char* format, ...)
                 _out[i].h(i, level, _out[i].f, _buf, l);
             }
         }
+        return _buf;
     }
+    return NULL;
 }
 
 static  void _clog_handler_file(int idx, clog_level_t level, void* const user, const char* buf, size_t len)
