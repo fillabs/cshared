@@ -33,7 +33,7 @@ static clog_item_t _out[CLOG_MAX_ITEM] = {
     {NULL}
 };
 static unsigned int _out_count = 0;
-static clog_level_t _min_level = CLOG_NONE;
+static clog_level_t _max_level = CLOG_NONE;
 
 static const char * _clog_lnames[CLOG_LASTLEVEL] = {
     "NONE",
@@ -54,6 +54,7 @@ static void _clog_out_initialize(clog_level_t level)
         _out[0].f = stderr;
         _out[0].h = _clog_handler_file;
         _out[0].level = level;
+        _max_level = level;
     }
     else {
         _out_count--;
@@ -85,8 +86,8 @@ clog_level_t clog_set_level(unsigned int const out_index, clog_level_t level)
         }
         _clog_out_initialize(level);
     }
-    if (level > _min_level) {
-        _min_level = level;
+    if (level > _max_level) {
+        _max_level = level;
     }
     return _out[out_index].level = level;
 }
@@ -115,8 +116,8 @@ int  clog_set_file_output(void* const out, clog_level_t level)
     _out[idx].h = _clog_handler_file;
     _out[idx].f = out;
     _out[idx].level = level;
-    if (level > _min_level) {
-        _min_level = level;
+    if (level > _max_level) {
+        _max_level = level;
     }
     return idx;
 }
@@ -132,19 +133,18 @@ int  clog_set_cb_output(clog_cb_fn* const out, void* const user, clog_level_t le
     _out[idx].h = out;
     _out[idx].f = user;
     _out[idx].level = level;
-    if (level > _min_level) {
-        _min_level = level;
+    if (level > _max_level) {
+        _max_level = level;
     }
     return idx;
 }
-
 
 const char * clog_fprintf(void* const f, int const level, const char* format, ...)
 {
     if (!_out_count) {
         _clog_out_initialize(CLOG_INFO);
     }
-    if (level >= _min_level) {
+    if (level <= _max_level) {
         va_list ap;
         va_start(ap, format);
         size_t l = vsnprintf(_buf, _len, format, ap);
@@ -156,7 +156,7 @@ const char * clog_fprintf(void* const f, int const level, const char* format, ..
             }
         }
         for (unsigned int i = 0; i < _out_count; i++) {
-            if (level >= _out[i].level) {
+            if (level <= _out[i].level) {
                 _out[i].h(i, level, _out[i].f, _buf, l);
             }
         }
