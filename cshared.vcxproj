@@ -27,6 +27,7 @@
     <ClCompile Include="cring.c" />
     <ClCompile Include="cserialize.c" />
     <ClCompile Include="cstr.c" />
+    <ClCompile Include="ctree.c" />
     <ClCompile Include="e4c_lite.c" />
   </ItemGroup>
   <ItemGroup>
@@ -41,6 +42,7 @@
     <ClInclude Include="cserialize.h" />
     <ClInclude Include="csocket.h" />
     <ClInclude Include="cstr.h" />
+    <ClInclude Include="ctree.h" />
     <ClInclude Include="e4c_lite.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

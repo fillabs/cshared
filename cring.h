@@ -47,9 +47,11 @@ I              I         I  . . .    I
 @endcode
  The next and prev pointer of an empty @ref cring_t item points to itself.
  */
+/*
 #ifdef _MSC_VER
 #define __typeof__ __typeof
 #endif
+*/
 
 typedef struct cring_t cring_t;
 

@@ -155,12 +155,15 @@ static inline cnode_t * __lastElement(cnode_t * x, int is_right)
     }
     return x;
 }
-#define __min(x) __lastElement(x, 0)
-#define __max(x) __lastElement(x, 1)
+
+/*
+#define __cmin(x) __lastElement(x, 0)
+#define __cmax(x) __lastElement(x, 1)
+*/
 
 static cnode_t * __join(cnode_t * s, cnode_t * t)
 {
-	s = __max(s);
+	s = __lastElement(s, 1);
 	__splay(s);
 	s->childs[1] = t;
 	t->parent = s;

@@ -201,7 +201,7 @@ size_t coer_length_size(size_t len)
 int  _coer_write_uint(const uint64_t n, char ** const ptr, const char * const end, int error)
 {
 	char * plen = *ptr;
-	int l = _coer_bytecount(n);
+	size_t l = _coer_bytecount(n);
 	if (plen + l >= end){
 		THROW_ERROR(ENOSPC);
 		return -1;
@@ -272,7 +272,7 @@ size_t coer_read_length(const char ** const ptr, const char * const end, int err
 int  _coer_write_length(const size_t len, char ** const ptr, const char * const end, int error)
 {
 	register uint8_t *p, *e;
-	uint8_t l;
+	size_t l;
 	uint64_t value = len;
 
 	if (value < 128){
@@ -292,7 +292,7 @@ int  _coer_write_length(const size_t len, char ** const ptr, const char * const 
 		*(e--) = (uint8_t)value;
 		value >>= 8;
 	}
-	*p = l + 0x80;
+	*p = 0x80 + (char)l;
 	*ptr = (char*) p + l + 1;
 	return 0;
 }
@@ -490,7 +490,7 @@ void _coer_write_open_type_end(char * b, char** const ptr, const char* const end
 			*ptr = b + len;
 		}
 		if(l == 1){
-			plen[0] = len;
+			plen[0] = (char)len;
 		}else{
 			while(len){
 				*(--b) = (char)len;
