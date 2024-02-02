@@ -574,10 +574,7 @@ void coptions_help_ex(FILE * f, const char * prgname, int flags, copt_t* opt, co
         progname = strrchr(prgname, '/');
         if(progname) progname++;
         else         progname = prgname;
-        if(usagestr){
-            fprintf(f, "Usage: %s <options> %s\n", progname, usagestr);
-        }
-        fprintf(f, "Options:\n");
+        fprintf(f, "Usage: %s <options> %s\nOptions:\n", progname, usagestr ? usagestr : "");
     }else{
         if(usagestr){
             fprintf(f, "%s\n", usagestr);
@@ -635,12 +632,13 @@ static int sprintf_option_value(const copt_t* const opt, char * const buf)
         ret = sprintf(buf, "%f", *((double*)opt->vptr));
         break;
     case COPT_STR:
+    case COPT_PATH:
     case COPT_CFGFILE:
     case COPT_STRENUM:
         if(*(char**)opt->vptr)
-	    ret = sprintf(buf, "%s", *(char**)opt->vptr);
+	        ret = sprintf(buf, "%s", *(char**)opt->vptr);
         else
-	    ret = sprintf(buf, "NULL");
+	        ret = sprintf(buf, "NULL");
 	break;
     case COPT_URL:
         {
@@ -676,8 +674,9 @@ static const char* valnames[] = {
     "flo", /* COPT_DOUBLE */
     "chr", /* COPT_CHAR   */
     "str", /* COPT_STR    */
-    "addr",/* COPT_HOST   */
+    "addr",/* COPT_URI   */
     "addr[:port]",/* COPT_SOCKADDR   */
+    "path", /* COPT_PATH*/
     "str", /* COPT_STRLIST*/
     "str", /* COPT_STRENUM*/
     "file",/* COPT_CFGFILE*/
