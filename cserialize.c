@@ -203,18 +203,18 @@ int _cintx_write (const uint64_t value, char ** const ptr, const char * const en
 	return 0;
 }
 
-static int countof1(int c)
+static inline int countof1(int c)
 {
+#if defined(__GNUC__) && ((__GNUC__ * 100 + __GNUC_MINOR__) >= 407) && !defined(__INTEL_COMPILER)
+	return 1 + __builtin_clrsb(c<<24);
+#else
 	int r = 0;
 	while(c & 0x80){
-#if defined(__GNUC__) && ((__GNUC__ * 100 + __GNUC_MINOR__) >= 407) && !defined(__INTEL_COMPILER)
-		return 1 + __builtin_clrsb(c<<24);
-#else
 		r++;
 		c<<=1;
-#endif		
 	}
 	return r;
+#endif		
 }
 
 uint64_t cintx_read(const char** const ptr, const char* const end, int * const perror)

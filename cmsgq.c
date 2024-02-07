@@ -180,8 +180,10 @@ static void _cmsgq_destructor(cmsgq_t* const m){
 
 cmsgq_t* _cmsgq_init(cmsgq_t* const m, cmsgq_destructor_fn * const destructor)
 {
-    memset(m, 0, sizeof(*m));
-    m->destructor = destructor ? destructor : _cmsgq_destructor;
+    if(m){
+        memset(m, 0, sizeof(*m));
+        m->destructor = destructor ? destructor : _cmsgq_destructor;
+    }
     return m;
 }
 

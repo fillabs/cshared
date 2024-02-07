@@ -175,17 +175,20 @@ char * cstralloc(size_t size)
 
 char * cstrpdups(char ** p, const char * str, size_t suffix)
 {
-		char * ret = NULL;
+	char * ret = NULL;
 	size_t len = 0;
 	if(str){
 		len = strlen(str);
-		if(len){
-			ret = cstralloc(len + suffix);
-			memcpy(ret, str, len+1);
+		ret = cstralloc(len + suffix + 1);
+		if(ret){
+			if(len) memcpy(ret, str, len);
+			ret[len] = 0;
+			*p = ret;
+			return ret + len;
 		}
 	}
-	*p = ret;
-	return ret + len;
+	*p = NULL;
+	return NULL;
 }
 
 char * cstrpndups(char ** p, const char * str, size_t max_size, size_t suffix)
@@ -194,14 +197,16 @@ char * cstrpndups(char ** p, const char * str, size_t max_size, size_t suffix)
 	size_t len = 0;
 	if(str){
 		len = strnlen(str, max_size);
-		if(len){
-			ret = cstralloc(len + suffix);
-			memcpy(ret, str, len);
+		ret = cstralloc(len + suffix);
+		if(ret){
+			if(len) memcpy(ret, str, len);
 			ret[len] = 0;
+			*p = ret;
+			return ret + len;
 		}
 	}
-	*p = ret;
-	return ret+len;
+	*p = NULL;
+	return NULL;
 }
 
 char * cstrdups(const char * str, size_t suffix)
@@ -209,9 +214,10 @@ char * cstrdups(const char * str, size_t suffix)
 	char * ret = NULL;
 	if(str){
 		size_t len = strlen(str);
-		if(len){
-			ret = cstralloc(len + suffix);
-			memcpy(ret, str, len+1);
+		ret = cstralloc(len + suffix + 1);
+		if(ret){
+			if(len) memcpy(ret, str, len);
+			ret[len] = 0;
 		}
 	}
 	return ret;
@@ -226,17 +232,11 @@ char * cstrndup(const char * str, size_t max_size)
 {
 	return cstrndups(str, max_size, 0);
 }
+
 char * cstrndups(const char * str, size_t max_size, size_t suffix)
 {
-	char * ret = NULL;
-	if(str){
-		size_t len = strnlen(str, max_size);
-		if(len){
-			ret = cstralloc(len + suffix);
-			memcpy(ret, str, len);
-			ret[len] = 0;
-		}
-	}
+	char * ret;
+	cstrpndups(&ret, str, max_size, suffix);
 	return ret;
 }
 
@@ -245,9 +245,9 @@ char * cstrndupn(const char * str, size_t max_size, size_t suffix)
 	char * ret = NULL;
 	if(str){
 		size_t len = strnlen(str, max_size-suffix);
-		if(len){
-			ret = cstralloc(len + suffix);
-			memcpy(ret, str, len);
+		ret = cstralloc(len + suffix + 1);
+		if(ret){
+			if(len) memcpy(ret, str, len);
 			ret[len] = 0;
 		}
 	}
@@ -273,7 +273,7 @@ char * cvstrdup(const char * ptr, ...)
 	va_end(ap);
 	
 	p = dst = cstralloc(len+1);
-	if(dst){
+	if(p){
 		r = ptr;
 		va_start(ap, ptr);
 		while(r){

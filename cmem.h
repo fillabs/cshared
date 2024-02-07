@@ -20,7 +20,7 @@
 #define cnew0_ex(TYPE, EXT)    (TYPE*)callocate0(sizeof(TYPE)+(EXT))
 typedef void(cdestructor_fn)(void*);
 
-static inline void cfree (void * p) { if(p) free(p); }
+static inline void cfree (void * p) { free(p); }
 
 /** Add X to *P and return old (*P) value
  * @param P pointer to the int variable

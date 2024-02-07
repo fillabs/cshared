@@ -452,9 +452,6 @@ static int set_option_value(copt_t* opt, const char * arg, char* val)
             char* e;
             value.v_sockaddr_in.port = (unsigned short)strtoul(np + 1, &e, 10);
             if (*e != 0) return -1;
-            if (value.v_sockaddr_in.port > USHRT_MAX) {
-                return -1;
-            }
             *np = 0;
         }
     case COPT_URL:
@@ -749,6 +746,11 @@ int  coptions_load(const char* filename, const char * section, int flags, copt_t
     }
 
     buf = (char*)malloc(1024);
+    if(!buf){
+        fprintf(stderr, "Memory allocation error\n");
+        fclose(f);        
+        return COPT_ERROR;
+    }
     while(fgets(buf, 1024, f)){
         char *e, *val=NULL, *key = buf;
         copt_t * o;
