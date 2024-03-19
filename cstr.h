@@ -90,6 +90,7 @@ const char * cstrnsave(const char * data, size_t size, const pchar_t * path);
 const pchar_t * cstrlastpathelement(const pchar_t * str);
 pchar_t * cstrpathextension(const pchar_t * str);
 
+int cstrmatch(const char * pattern, const char * str);
 
 #ifdef PCHAR16BITS
 #define pchar_len(S)      wcslen(S)

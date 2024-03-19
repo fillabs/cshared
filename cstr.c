@@ -488,3 +488,20 @@ int cstr_read(char * const p, const char ** const ptr, const char * const end, i
 
 int cstrn_write(const char * const p, size_t length, char ** const ptr, const char * const end, int * const error);
 int cstrn_read(char * const p, size_t length, const char ** const ptr, const char * const end, int * const error);
+
+#if defined( __GNUC__ )
+#include <fnmatch.h>
+int cstrmatch(const char * pattern, const char * str) {
+	if(pattern){
+		if(str)
+			return (0 == fnmatch(pattern, str, 0));
+		return 0;
+	}
+	return 1;
+}
+//#elif defined (_MSC_VER)
+#else
+int cstrmatch(const char * pattern, const char * str) {
+	return cstrequal(pattern, str);
+}
+#endif

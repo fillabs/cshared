@@ -251,11 +251,8 @@ static int printf_hex_string (FILE *stream,
     const unsigned char * e = p + slen;
     
     for(; p < e; p++) {
-        int n = (*p) & 0x0F;
         fputc( hd[(*p) & 0x0F], stream);
-        n = (*p) >> 4;
         fputc( hd[(*p) >> 4], stream);
-        fflush(stream);
     }
     
     if(info->left){ 
