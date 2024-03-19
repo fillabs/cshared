@@ -80,4 +80,8 @@ const char* clog_fprintf(void * const f, int const level, const char * format, .
 #endif
 #undef __CLOG_MODULE
 
+#if defined (__GNUC__) && !defined(__CYGWIN__)
+#define CLOG_PRINTF_HEX
+#endif
+
 #endif

@@ -23,7 +23,7 @@ typedef struct clog_item_t clog_item_t;
 
 static void _clog_handler_file(int idx, clog_level_t level, void* user, const char* buf, size_t len);
 
-#ifdef __GNUC__
+#ifdef CLOG_PRINTF_HEX
 #include <printf.h>
 #include <errno.h>
 
@@ -69,7 +69,8 @@ static void _clog_out_initialize(clog_level_t level)
     }
     if (_buf == NULL) {
         _buf = malloc(_len=256);
-#ifdef __GNUC__
+
+#ifdef CLOG_PRINTF_HEX
         register_printf_specifier('H', printf_hex_string, printf_hex_string_arginfo);
 #endif
     }
@@ -222,7 +223,7 @@ int clog_option(const copt_t* opt, const char* option, const copt_value_t* value
     fprintf(stderr, "%s: unknown log level\n", value->v_str);
     return -1;
 }
-#ifdef __GNUC__
+#ifdef CLOG_PRINTF_HEX
 static const char* _hexDigitsUp  = "0123456789ABCDEF";
 static const char* _hexDigitsLow = "0123456789abcdef";
 static int printf_hex_string (FILE *stream,
