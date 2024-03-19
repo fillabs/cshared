@@ -23,6 +23,14 @@ typedef struct clog_item_t clog_item_t;
 
 static void _clog_handler_file(int idx, clog_level_t level, void* user, const char* buf, size_t len);
 
+#ifdef __GNUC__
+#include <printf.h>
+#include <errno.h>
+
+static int printf_hex_string (FILE *stream, const struct printf_info *info, const void *const *args);
+static int printf_hex_string_arginfo (const struct printf_info *info, size_t n, int *argtypes, int * size);
+#endif
+
 typedef struct clog_item_t {
     clog_cb_fn* h;
     void* f;
@@ -61,6 +69,9 @@ static void _clog_out_initialize(clog_level_t level)
     }
     if (_buf == NULL) {
         _buf = malloc(_len=256);
+#ifdef __GNUC__
+        register_printf_specifier('H', printf_hex_string, printf_hex_string_arginfo);
+#endif
     }
 }
 
@@ -211,3 +222,58 @@ int clog_option(const copt_t* opt, const char* option, const copt_value_t* value
     fprintf(stderr, "%s: unknown log level\n", value->v_str);
     return -1;
 }
+#ifdef __GNUC__
+static const char* _hexDigitsUp  = "0123456789ABCDEF";
+static const char* _hexDigitsLow = "0123456789abcdef";
+static int printf_hex_string (FILE *stream,
+              const struct printf_info *info,
+              const void *const *args)
+{
+    const unsigned char * p = *(const unsigned char**)(args[0]);
+    int wlen = info->width;
+    int slen = info->prec;
+    if(wlen == 0){
+        errno = EINVAL;
+        return -1;
+    }
+    int ret = wlen;
+    if(slen == -1 || slen > wlen){ // no source length given
+        slen = wlen;
+    }
+    int pad = (info->pad) ? info->pad : ' ';
+    if(0 == info->left){ 
+        for(; wlen>slen; wlen--){
+            fputc(pad, stream);
+        }
+    }
+    const char * hd = (info->alt) ? _hexDigitsLow : _hexDigitsUp;
+
+    const unsigned char * e = p + slen;
+    
+    for(; p < e; p++) {
+        int n = (*p) & 0x0F;
+        fputc( hd[(*p) & 0x0F], stream);
+        n = (*p) >> 4;
+        fputc( hd[(*p) >> 4], stream);
+        fflush(stream);
+    }
+    
+    if(info->left){ 
+        for(; wlen>slen; wlen--){
+            fputc(pad, stream);
+        }
+    }
+    return ret;
+}
+
+
+static int
+printf_hex_string_arginfo (const struct printf_info *info, size_t n, int *argtypes, int * size)
+{
+  if (n > 0){
+    argtypes[0] = PA_STRING;
+    size[0] = sizeof(void*);
+  }
+  return 1;
+}
+#endif

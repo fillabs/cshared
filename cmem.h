@@ -88,8 +88,10 @@ static inline void cfree (void * p) { free(p); }
 #define __INITIALIZER__(f) \
         static void f(void) __attribute__((constructor)); \
         static void f(void)
-
+#ifndef CUNUSED
 #define CUNUSED __attribute__((unused))
+#define CDEPRECATED __attribute__((deprecated))
+#endif
 #elif defined (_MSC_VER)
 #include <windows.h>
 #define _cfetch_and_add(P,X) (InterlockedAddNoFence(P,X)-X)
@@ -128,7 +130,15 @@ static inline void cfree (void * p) { free(p); }
         struct _initializer_##f##_t_ { _initializer_##f##_t_(void) { f(); } }; static _initializer_##f##_t_ _initializer_##f##_; \
         static void f(void)
 #endif
+#ifndef CUNUSED
 #define CUNUSED
+#define CDEPRECATED __declspec ((deprecated))
+#endif
+#else
+#ifndef CUNUSED
+#define CUNUSED
+#define CDEPRECATED
+#endif
 #endif
 
 #define struct_from_member(TYPE,POINTER,MEMBER) ((TYPE*)(((const char*)POINTER)-offsetof(TYPE,MEMBER)))

@@ -397,6 +397,38 @@ size_t coer_read_bit_string(void * const p, size_t length, const char ** const p
 	return length;
 }
 
+FN_THROW(RuntimeException) uint32_t coer_read_bit_mask(size_t length, const char ** ptr, const char * const end, int error)
+{
+	uint32_t ret = 0;
+	size_t bcount;
+	int unused;
+	if (length == (size_t)-1) {
+		bcount = coer_read_length(ptr, end, error);
+		unused = 0;
+		if(bcount){
+			if(bcount > 5)
+				THROW_ERROR(EFAULT);
+			if((*ptr) + bcount > end)
+				THROW_ERROR(EFAULT);
+			unused = coer_read_uint8(ptr, end, error);
+			bcount--;
+			length = bcount * 8 - unused;
+		}
+	} else {
+		if(length > 32)
+			THROW_ERROR(EINVAL);
+		bcount = (length + 7) / 8;
+		unused = bcount * 8 - length;
+	}
+	const uint8_t * p = (const uint8_t *)(*ptr);
+	for(; bcount; bcount--){
+		ret = (ret << 8) + *(p++);
+	}
+	*ptr = (const char*)p;
+	return ret >> unused;
+}
+
+
 int coer_write_bit_string(const void * const p, size_t bitlength, char ** const ptr, const char * const end, int error)
 {
 	THROW_ERROR(EACCES);

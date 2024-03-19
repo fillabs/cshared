@@ -115,6 +115,7 @@ FN_THROW(RuntimeException) size_t coer_read_octet_string_alloc(void ** const p, 
 
 FN_THROW(RuntimeException) int coer_write_bit_string(const void * const p, size_t bitlength, char ** const ptr, const char * const end, int error);
 FN_THROW(RuntimeException) size_t coer_read_bit_string (void * const p, size_t length, const char ** const ptr, const char * const end, int error);
+FN_THROW(RuntimeException) uint32_t coer_read_bit_mask(size_t bit_count, const char ** ptr, const char * const end, int error);
 
 /*
 FN_THROW(RuntimeException) uint64_t coer_read_sequence_header(uint64_t opt_count, const char ** const ptr, const char * const end, int error);
@@ -152,10 +153,25 @@ FN_THROW(RuntimeException) void   _coer_write_open_type_end(char* b, char** cons
 typedef struct coer_ot_t {
     size_t    size;
     uint8_t * buf;
+	const char * end;
 }coer_opentype_t;
-#define coer_read_ot_do(N, PTR, END, ERROR) for (coer_opentype_t N = {coer_read_length(PTR, END, ERROR),(uint8_t*)*(PTR)}; N.size != (size_t)-1; N.size = (size_t)-1)
-#define coer_read_open_type_do(N, PTR, END, ERROR) for (size_t __ ## N ## __ot_run=1,  N ## _size=coer_read_length(PTR, END, ERROR); __ ## N ## __ot_run; __ ## N ## __ot_run=0)
-#define coer_read_sequence_do(N, PTR, END, ERROR) for (uint8_t __ ## N ## __seq_run=1, N ## _presence_mask=coer_read_uint8(PTR, END, ERROR); __ ## N ## __seq_run; __ ## N ## __seq_run=0)
+#define coer_read_ot_do(N, PTR, END, ERROR) for (coer_opentype_t N = {coer_read_length(PTR, END, ERROR),(uint8_t*)*(PTR), (*PTR)+N.size}; N.size != (size_t)-1; (*PTR)=(const char*)(N.buf+N.size), N.size = (size_t)-1)
+#define coer_read_open_type_do(N, PTR, END, ERROR)         for (size_t __ ## N ## __ot_run=1,  N ## _size=coer_read_length(PTR, END, ERROR); __ ## N ## __ot_run; __ ## N ## __ot_run=0)
+#define coer_read_sequence_do(N, OPT_CNT, PTR, END, ERROR)  \
+    for ( uint32_t __ ## N ## __seq_run=1, CUNUSED N ## _opt_cnt=OPT_CNT, N ## _presence_mask = (OPT_CNT ? coer_read_bit_mask(OPT_CNT, PTR, END, ERROR) : 0); __ ## N ## __seq_run; __ ## N ## __seq_run=0)
+
+#define coer_read_sequence_extension_do(N, PTR, END, ERROR) \
+    for( uint32_t N##_extensions_mask = (N##_opt_cnt && (N##_presence_mask & 1<<(N##_opt_cnt-1)))?coer_read_bit_mask(-1, PTR, END, ERROR):0;N##_extensions_mask;N##_extensions_mask=0)
+
+#define coer_skip_sequence_extensions_do(N, PTR, END, ERROR) \
+	for(;N##_extensions_mask;N##_extensions_mask >>= 1) { \
+		if (1 & N##_extensions_mask){ \
+			size_t _l = coer_read_length(PTR, END, ERROR); \
+			if(END < (_l + (*(PTR)))) { throw(RuntimeException, ERROR, NULL); } \
+			*(PTR) += _l; \
+		} \
+	}
+
 #define coer_read_choice_do(N, PTR, END, ERROR) for (uint32_t  __ ## N ## __ch_run=1,  N ## _tag=coer_read_tag(PTR, END, ERROR); __ ## N ## __ch_run; __ ## N ## __ch_run=0)
 
 #define coer_write_open_type(NAME,LEN,PTR,END,ERROR) \
