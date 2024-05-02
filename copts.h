@@ -33,6 +33,8 @@ extern "C" {
     enum coptype_t{
         COPT_BOOL ,   /**< Boolean option. Doesn't require arguments.*/
         COPT_BOOLI,   /**< Inverted Boolean option. Doesn't require arguments. */
+        COPT_INT ,    /**< Requires for int argument */
+        COPT_UINT,    /**< Requires for unsigned int argument */
         COPT_LONG ,   /**< Requires for long argument */
         COPT_ULONG,   /**< Requires for unsigned long argument */
         COPT_SHORT,   /**< Requires for short (16 bit) argument */
@@ -76,8 +78,6 @@ extern "C" {
                                   *   options and non-option values */
     };
 
-#define COPT_INT      COPT_LONG
-#define COPT_UINT     COPT_ULONG
 #define COPT_IBOOL    COPT_BOOLI
 
     /** Main options item.
@@ -173,6 +173,8 @@ extern "C" {
         int            v_boolean;
         signed   short v_short;
         unsigned short v_ushort;
+        signed   int   v_int;
+        unsigned long  v_uint;
         signed   long  v_long;
         unsigned long  v_ulong;
         float          v_float;

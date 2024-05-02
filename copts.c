@@ -374,6 +374,20 @@ static int set_option_value(copt_t* opt, const char * arg, char* val)
         value.v_long = strtol(val, &np, 0);
         if(*np != 0) return -1;
         break;
+    case COPT_INT:
+        if(!val) return -1;
+        value.v_long = strtol(val, &np, 0);
+        if(*np != 0 || value.v_long>INT_MAX || value.v_long<INT_MIN)
+            return -1;
+        value.v_int = (int) value.v_long;
+        break;
+    case COPT_UINT:
+        if(!val) return -1;
+        value.v_ulong = strtoul(val, &np, 0);
+        if(*np != 0 || value.v_ulong>UINT_MAX)
+            return -1;
+        value.v_uint = (unsigned int) value.v_ulong;
+        break;
     case COPT_ULONG:
         if(!val) return -1;
         value.v_ulong = strtoul(val, &np, 0);
@@ -382,20 +396,16 @@ static int set_option_value(copt_t* opt, const char * arg, char* val)
     case COPT_SHORT:
         if(!val || !opt->vptr) return -1;
         value.v_long = strtol(val, &np, 0);
-        if(*np != 0) return -1;
-        if(value.v_long>SHRT_MAX || value.v_long<SHRT_MIN){
+        if(*np != 0 || value.v_long>SHRT_MAX || value.v_long<SHRT_MIN)
             return -1;
-        }
         value.v_short = (short) value.v_long;
         break;
     case COPT_USHORT:
         if (!val || !opt->vptr) return -1;
         value.v_ulong = strtoul(val, &np, 0);
-        if (*np != 0) return -1;
-        if (value.v_ulong > USHRT_MAX) {
+        if (*np != 0 || value.v_ulong > USHRT_MAX)
             return -1;
-        }
-        value.v_ushort = (unsigned short)value.v_ulong;
+        value.v_ushort = (unsigned short) value.v_ulong;
         break;
 
     case COPT_FLOAT:
@@ -422,11 +432,9 @@ static int set_option_value(copt_t* opt, const char * arg, char* val)
             value.v_char = val[0];
         }else{
             value.v_ulong = strtoul(val, &np, 0);
-            if(*np != 0) return -1;
-            if(value.v_ulong>UCHAR_MAX){
+            if(*np != 0 || value.v_ulong>UCHAR_MAX)
                 return -1;
-            }
-            value.v_char = (unsigned char)value.v_long;
+            value.v_char = (unsigned char)value.v_ulong;
         }
         break;
     case COPT_STRENUM:
@@ -501,6 +509,10 @@ static int set_option_value(copt_t* opt, const char * arg, char* val)
         break;
     case COPT_STRENUM:
         opt->vptr = (void*)(((const char**)opt->vptr) + value.v_long);
+        break;
+    case COPT_INT:
+    case COPT_UINT:
+        *(int*)opt->vptr = value.v_int;
         break;
     case COPT_SHORT:
     case COPT_USHORT:
