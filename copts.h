@@ -118,7 +118,7 @@ extern "C" {
       * @return the integer enum value of the selected item.
      */
 #define copts_enum_value(opts,idx,ptr) \
-    ((const char **)((opts)[idx]).vptr) - ((const char **)(ptr))
+    ((int)(((const char **)((opts)[idx]).vptr) - ((const char **)(ptr))))
 
     /**
      * Load options config file.

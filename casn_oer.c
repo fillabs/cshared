@@ -418,7 +418,7 @@ FN_THROW(RuntimeException) uint32_t coer_read_bit_mask(size_t length, const char
 		if(length > 32)
 			THROW_ERROR(EINVAL);
 		bcount = (length + 7) / 8;
-		unused = bcount * 8 - length;
+		unused = (int)(bcount * 8 - length);
 	}
 	const uint8_t * p = (const uint8_t *)(*ptr);
 	for(; bcount; bcount--){
