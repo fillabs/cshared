@@ -132,7 +132,7 @@ static inline void cfree (void * p) { free(p); }
 #endif
 #ifndef CUNUSED
 #define CUNUSED
-#define CDEPRECATED __declspec ((deprecated))
+#define CDEPRECATED __declspec (deprecated)
 #endif
 #else
 #ifndef CUNUSED

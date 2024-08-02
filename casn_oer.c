@@ -429,7 +429,7 @@ FN_THROW(RuntimeException) uint32_t coer_read_bit_mask(size_t length, const char
 	int unused;
 	length = _coer_read_bit_mask_length(length, ptr, end, error);
 	bcount = (length + 7) / 8;
-	unused = bcount * 8 - length;
+	unused = (int)(bcount * 8 - length);
 	const uint8_t * p = (const uint8_t *)(*ptr);
 	for(; bcount; bcount--){
 		ret = (ret << 8) + *(p++);
@@ -440,9 +440,9 @@ FN_THROW(RuntimeException) uint32_t coer_read_bit_mask(size_t length, const char
 FN_THROW(RuntimeException) uint32_t coer_read_bit_mask_revers(size_t length, const char ** ptr, const char * const end, int error)
 {
 	uint32_t ret = 0;
-	size_t bcount;
+	unsigned int bcount;
 	length = _coer_read_bit_mask_length(length, ptr, end, error);
-	bcount = (length + 7) / 8;
+	bcount = (unsigned int)((length + 7) / 8);
 	const uint8_t * p = (const uint8_t *)(*ptr);
 	for(; bcount; bcount--){
 		ret = (ret << 8) + *(p++);

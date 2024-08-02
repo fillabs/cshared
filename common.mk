@@ -1,13 +1,18 @@
 export LANG=en_US
 ALL_CONFIGURATIONS := POSIX WIN32
-.PHONY: all clean tests docs cleandocs distr DUMMY
+.PHONY: all clean tests docs cleandocs distr DUMMY echo echo_includes echo_defines echo_libs echo_cflags echo_ldflags
 
 BUILDROOT ?= $(PROJECTROOT)/build
 CSHAREDDIR ?= $(PROJECTROOT)/cshared 
 CXMLDIR ?= $(PROJECTROOT)/cxml
 
+HOSTARCH = $(shell gcc -dumpmachine)
 ifeq ($(ARCH),)
- ARCH = $(shell gcc -dumpmachine)
+ ARCH = $(HOSTARCH)
+ GCC := gcc
+ STRIP := strip
+ AR := ar
+else ifeq ($(ARCH),$(HOSTARCH))
  GCC := gcc
  STRIP := strip
  AR := ar
@@ -21,7 +26,23 @@ ifneq (,$(findstring cygwin,$(ARCH)))
  STRIP := strip
 endif
 
--include $(CSHAREDDIR)/arch/$(ARCH).mk
+-include $(CSHAREDDIR)/mk/$(ARCH).mk
+
+ifeq ($(DEBUG),)
+ DEBUG=no
+endif
+
+ifeq ($(DEBUG),yes)
+  cflags  += -g -O0
+  defines += DEBUG
+  dsuffix = -d
+else
+  defines += NDEBUG
+  cflags  += -O2
+endif
+
+outdir     := $(BUILDROOT)/$(ARCH)$(dsuffix)
+objdir     := $(outdir)/o-$(PROJECT)
 
 ifneq ($(findstring w32,$(ARCH)),)
  packages := $(filter-out readline threads, $(packages))
@@ -40,80 +61,12 @@ endif
 
 cflags   += -fPIC -Wall
 
-ifeq ($(DEBUG),)
- DEBUG=no
-endif
+define IncludePackage
+#$$(info include $$(CSHAREDDIR)/mk/pkg-$(1).mk)
+include $$(CSHAREDDIR)/mk/pkg-$(1).mk
+endef
 
-ifeq ($(DEBUG),yes)
-  cflags  += -g -O0
-  defines += DEBUG
-  dsuffix = -d
-else
-  defines += NDEBUG
-  cflags  += -O2
-endif
-
-ifneq ($(filter readline, $(packages)),)
-  defines += USE_READLINE
-  libs    += -lreadline
-endif
-
-ifneq ($(filter dmalloc, $(packages)),)
-  defines  += DMALLOC DMALLOC_FUNC_CHECK
-  libs     += -ldmalloc
-  dsuffix   = -dmalloc
-endif
-
-ifneq ($(filter profile, $(packages)),)
-  cflags += -pg
-endif
-
-ifneq ($(filter openssl, $(packages)),)
- ifneq ($(findstring mingw32,$(ARCH)),)
-  ifeq ($(OPENSSL_DIR),)
-    OPENSSL_DIR := C:/OpenSSL/Win32
-  endif
-  libs += $(OPENSSL_DIR)/lib/MinGW/libcrypto.a $(OPENSSL_DIR)/lib/MinGW/libssl.a
- else
-  libs += -lssl -lcrypto
- endif
- ifneq ($(OPENSSL_DIR),)
-  includes += $(OPENSSL_DIR)/include
-  libs += -L $(OPENSSL_DIR)/lib
- endif
-endif
-
-ifneq ($(filter cxml, $(packages)),)
-  predirs += $(CXMLDIR)
-  includes += $(CXMLDIR)
-endif
-
-ifneq ($(filter cshared, $(packages)),)
-  predirs += $(CSHAREDDIR)
-  includes += $(CSHAREDDIR)
-endif
-
-ifneq ($(filter pcap, $(packages)),)
- ifneq ($(findstring cygwin,$(ARCH)),)
-  ifneq ($(NPCAP_SDK),)
-   includes += "$(NPCAP_SDK)/Include"
-   libs     += "/cygdrive/c/Windows/System32/Npcap/wpcap.dll"
-  endif
- else
-  libs    += -lpcap
- endif
-endif
-
-ifneq ($(filter thread, $(packages)),)
-  defines += USE_THREADS
-  libs    += -lpthread
-endif
-
-ifneq ($(filter curl, $(packages)),)
-  defines += USE_CURL
-  libs    += -lcurl
-endif
-
+$(foreach pkg,$(packages),$(eval $(call IncludePackage,$(pkg))))
 
 ifeq ($(testdir), )
   testdir := tests
@@ -121,7 +74,10 @@ endif
 
 all_includes  := $(includes)  $(foreach cfg,$(CFG),$(includes-$(cfg)))
 all_defines   := $(defines)   $(foreach cfg,$(CFG),$(defines-$(cfg)))
+all_cflags    := $(cflags)    $(foreach cfg,$(CFG),$(cflags-$(cfg)))
+all_ldflags   := $(ldflags)   $(foreach cfg,$(CFG),$(ldflags-$(cfg)))
 all_libs      := $(libs)      $(foreach cfg,$(CFG),$(libs-$(cfg)))
+all_libdirs   := $(libdirs)   $(foreach cfg,$(CFG),$(libdirs-$(cfg)))
 all_sources   := $(sources)   $(foreach cfg,$(CFG),$(sources-$(cfg))) 
 all_headers   := $(headers)   $(foreach cfg,$(CFG),$(headers-$(cfg)))
 all_tests     := $(tests)     $(foreach cfg,$(CFG),$(tests-$(cfg)))
@@ -135,9 +91,11 @@ undefine modules
 undefine includes
 undefine defines
 undefine distfiles
+undefine libdirs
 include $(1)/module.mk
-$$(foreach V, $$(sources),   $$(eval all_sources +=  $$(if $$(filter /%, $$(V)), $$(TOPDIR)$$(V), $(1)/$$(V))))
+$$(foreach V, $$(sources),   $$(eval all_sources  +=  $$(if $$(filter /%, $$(V)), $$(TOPDIR)$$(V), $(1)/$$(V))))
 $$(foreach V, $$(includes),  $$(eval all_includes += $$(if $$(filter /%, $$(V)), $$(TOPDIR)$$(V), $(1)/$$(V))))
+$$(foreach V, $$(libdurs),   $$(eval all_libdirs  += $$(if $$(filter /%, $$(V)), $$(TOPDIR)$$(V), $(1)/$$(V))))
 $$(foreach V, $$(modules),   $$(eval $$(call IncludeModule, $$(if $$(filter /%, $$(V)), $$(TOPDIR)$$(V), $(1)/$$(V)))))
 all_defines += $$(defines)
 $$(foreach V, $$(distfiles), $$(eval all_distfiles += $$(if $$(filter /%, $$(V)), $$(TOPDIR)$$(V), $(1)/$$(V))))
@@ -149,15 +107,11 @@ tests     := $(addprefix $(addsuffix /,$(testdir)),$(tests))
 sources   := $(addprefix $(addsuffix /,$(srcdir)),$(all_sources))
 headers   := $(addprefix $(addsuffix /,$(incdir)),$(all_headers))
 distfiles := $(all_distfiles)
-cflags += $(addprefix -I, $(all_includes)) $(addprefix -D, $(all_defines))
+cflags    := $(all_cflags) $(addprefix -I, $(all_includes)) $(addprefix -D, $(all_defines))
+ldflags   := $(all_ldflags) $(addprefix -L,$(outdir) $(all_libdirs))
+libs      := $(all_libs)
 
-ifeq ($(BUILDROOT),)
- BUILDROOT = .
-endif
-
-outdir     := $(BUILDROOT)/$(ARCH)$(dsuffix)
-objdir     := $(outdir)/o-$(PROJECT)
-objects    := $(patsubst %.c, $(objdir)/%.o, $(all_sources))
+objects    := $(patsubst %.c, $(objdir)/%.o, $(sources))
 $(foreach b,$(bins),$(eval objects-$(b)=$$(patsubst %.c,$$(objdir)/%.o,$$(sources-$(b)))))
 
 binobjects := $(foreach b,$(bins),$(objects-$(b))) 
@@ -168,20 +122,19 @@ alibnames  := $(patsubst %, $(outdir)/lib%.a,  $(alibs))
 solibnames := $(patsubst %, $(outdir)/lib%.so, $(solibs))
 binnames   := $(patsubst %, $(outdir)/%, $(bins))
 
-ldflags += $(patsubst %, -L%, $(outdir) $(libdirs))
-
-ifneq ($(filter cxml, $(packages)),)
-  deps += $(outdir)/libcxml.a
-  libs += $(outdir)/libcxml.a
-endif
-
-ifneq ($(filter cshared, $(packages)),)
-  deps += $(outdir)/libcshared.a
-  libs += $(outdir)/libcshared.a
-endif
-
-
 all: $(dirs) $(pre) $(predirs) $(alibnames) $(solibnames) $(binnames) $(postdirs) $(post)
+
+echo: echo_includes echo_defines echo_libs
+echo_includes:
+	@echo includes=$(all_includes)
+echo_defines:
+	@echo defines=$(all_defines)
+echo_libs:
+	@echo libs=$(libs)
+echo_cflags:
+	@echo cflags=$(cflags)
+echo_ldflags:
+	@echo ldflags=$(ldflags)
 
 tests: all $(testbins)
 
