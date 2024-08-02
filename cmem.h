@@ -208,4 +208,10 @@ __inline static void  _crelease(void*p, int*prcntr, void * destr) {
 
 #define crelease(S,D) _crelease(S, &(S)->_rcntr, D)
 
+__inline static unsigned int revers_bits(unsigned int bits, unsigned int n) {
+	unsigned int r=0;
+	for(;bits--;r=(r*2)|(n&1),n>>=1);
+	return r;
+}
+
 #endif

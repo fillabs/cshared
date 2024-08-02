@@ -117,6 +117,9 @@ extern "C" {
       * @param ptr  The initial value of the @a vptr field of the opion array item.
       * @return the integer enum value of the selected item.
      */
+#define copts_enum_valid(opts,idx) \
+    (NULL != *((const char **)((opts)[idx]).vptr))
+
 #define copts_enum_value(opts,idx,ptr) \
     ((int)(((const char **)((opts)[idx]).vptr) - ((const char **)(ptr))))
 

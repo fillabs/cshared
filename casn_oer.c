@@ -11,6 +11,7 @@
 #include "casn_oer.h"
 #include "cserialize.h"
 #include "cstr.h"
+#include "cmem.h"
 #include "e4c_lite.h"
 #include <errno.h>
 #include <string.h>
@@ -397,12 +398,13 @@ size_t coer_read_bit_string(void * const p, size_t length, const char ** const p
 	return length;
 }
 
-FN_THROW(RuntimeException) uint32_t coer_read_bit_mask(size_t length, const char ** ptr, const char * const end, int error)
+
+#define _coer_read_bit_mask_length(L,PTR,END,ERROR) (((L)==(size_t)-1)?__coer_read_bit_mask_length(L, PTR, END, ERROR):(L))
+FN_THROW(RuntimeException) static size_t __coer_read_bit_mask_length(size_t length, const char ** ptr, const char * const end, int error)
 {
-	uint32_t ret = 0;
-	size_t bcount;
-	int unused;
 	if (length == (size_t)-1) {
+		size_t bcount;
+		int unused;
 		bcount = coer_read_length(ptr, end, error);
 		unused = 0;
 		if(bcount){
@@ -412,20 +414,40 @@ FN_THROW(RuntimeException) uint32_t coer_read_bit_mask(size_t length, const char
 				THROW_ERROR(EFAULT);
 			unused = coer_read_uint8(ptr, end, error);
 			bcount--;
-			length = bcount * 8 - unused;
 		}
-	} else {
-		if(length > 32)
-			THROW_ERROR(EINVAL);
-		bcount = (length + 7) / 8;
-		unused = (int)(bcount * 8 - length);
+		length = bcount * 8 - unused;
 	}
+	if(length > 32)
+		THROW_ERROR(EINVAL);
+	return length;
+}
+
+FN_THROW(RuntimeException) uint32_t coer_read_bit_mask(size_t length, const char ** ptr, const char * const end, int error)
+{
+	uint32_t ret = 0;
+	size_t bcount;
+	int unused;
+	length = _coer_read_bit_mask_length(length, ptr, end, error);
+	bcount = (length + 7) / 8;
+	unused = bcount * 8 - length;
 	const uint8_t * p = (const uint8_t *)(*ptr);
 	for(; bcount; bcount--){
 		ret = (ret << 8) + *(p++);
 	}
-	*ptr = (const char*)p;
 	return ret >> unused;
+}
+
+FN_THROW(RuntimeException) uint32_t coer_read_bit_mask_revers(size_t length, const char ** ptr, const char * const end, int error)
+{
+	uint32_t ret = 0;
+	size_t bcount;
+	length = _coer_read_bit_mask_length(length, ptr, end, error);
+	bcount = (length + 7) / 8;
+	const uint8_t * p = (const uint8_t *)(*ptr);
+	for(; bcount; bcount--){
+		ret = (ret << 8) + *(p++);
+	}
+	return revers_bits(bcount, ret);
 }
 
 

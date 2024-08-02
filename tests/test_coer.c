@@ -133,6 +133,20 @@ static void _test_opentype(size_t il, size_t l, size_t cntlen, const char * cntt
     free(buf);
 }
 
+/*
+SEQUENCE {
+    n1 UInt8,
+    n2 UInt8 OPTIONAL,
+    n3 UInt8 DEFAULT 3,
+    ...,
+    n4 UInt8,
+    n5 UInt8
+}
+*/
+static void _test_sequence()
+{
+}
+
 int main(int argc, char ** argv){
 
     try{
