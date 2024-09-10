@@ -18,6 +18,11 @@
 #define cnew0(TYPE)    (TYPE*)callocate0(sizeof(TYPE))
 #define cnew_ex(TYPE, EXT)     (TYPE*)callocate(sizeof(TYPE)+(EXT))
 #define cnew0_ex(TYPE, EXT)    (TYPE*)callocate0(sizeof(TYPE)+(EXT))
+
+#ifndef carraysize
+#define carraysize(A) (sizeof(A)/sizeof(A[0]))
+#endif
+
 typedef void(cdestructor_fn)(void*);
 
 static inline void cfree (void * p) { free(p); }
