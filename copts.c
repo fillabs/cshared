@@ -192,10 +192,10 @@ static int do_coptions(int argc, char* argv[], int flags, copt_t* opts)
                         }
                     }
                     if(COPT_END == o->type){
-                        if(0==(flags&COPT_NOERR_MSG)){
-                            fprintf(stderr, "Unknown option '%s'\n", argv[i]);
-                        }
                         if(0==(flags & COPT_NOERR_UNKNOWN)){
+                            if(0==(flags&COPT_NOERR_MSG)){
+                                fprintf(stderr, "Unknown option '%s'\n", argv[i]);
+                            }
                             return 0-i;
                         }
                     }
