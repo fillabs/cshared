@@ -176,10 +176,10 @@ ifeq (no,$(DEBUG))
 endif
 
 $(dirs) $(INSTALLROOT):
-	mkdir -p $@
+	mkdir -p "$@"
 
 $(objects) $(binobjects): $(objdir)/%.o: %.c
-	@mkdir -p $(dir $@)
+	@mkdir -p "$(dir $@)"
 	$(GCC)  $(cflags) -o $@ -MMD -MF $(objdir)/$*.d -c $(abspath $<)
 
 clean:
@@ -188,7 +188,7 @@ clean:
 distfiles += $(wildcard Makefile $(DOXYFILE))
 dist:
 	-rm -rf $(PROJECT) $(PROJECT)-$(shell date -u '+%Y%m%d').tar.gz
-	mkdir $(PROJECT)
+	mkdir "$(PROJECT)"
 	cp --parents $(sources) $(headers) $(distfiles) $(addprefix tests/, $(tests)) $(PROJECT)
 	tar -zcvf $(PROJECT)-$(shell date -u '+%Y%m%d').tar.gz $(PROJECT)
 	rm -rf $(PROJECT)
@@ -206,19 +206,19 @@ ifneq (,$(INSTALLROOT))
 
 install: $(INSTALLROOT) 
 ifneq (,$(strip $(binnames)))
-	mkdir -p $(INSTALLROOT)/$(ARCH)$(dsuffix)/bin
-	cp -f $(binnames) $(INSTALLROOT)/$(ARCH)$(dsuffix)/bin
+	mkdir -p "$(INSTALLROOT)/$(ARCH)$(dsuffix)/bin"
+	cp -f $(binnames) "$(INSTALLROOT)/$(ARCH)$(dsuffix)/bin"
 endif
 #ifneq (,$(strip $(tests)))
 #	mkdir -p $(INSTALLROOT)/$(ARCH)$(dsuffix)/bin
 #	cp -f $(testbins) $(INSTALLROOT)/$(ARCH)$(dsuffix)/bin
 #endif
 ifneq (,$(strip $(alibnames) $(solibnames)))
-	mkdir -p $(INSTALLROOT)/$(ARCH)$(dsuffix)/lib
-	cp -f $(alibnames) $(solibnames) $(INSTALLROOT)/$(ARCH)$(dsuffix)/lib
+	mkdir -p "$(INSTALLROOT)/$(ARCH)$(dsuffix)/lib"
+	cp -f $(alibnames) $(solibnames) "$(INSTALLROOT)/$(ARCH)$(dsuffix)/lib"
 endif
 ifneq (,$(headers))
-	mkdir -p $(INSTALLROOT)/include
+	mkdir -p "$(INSTALLROOT)/include"
 	cp -rf $(headers) $(INSTALLROOT)/include
 endif
 

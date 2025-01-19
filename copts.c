@@ -675,13 +675,15 @@ static int sprintf_option_value(const copt_t* const opt, char * const buf)
 static const char* valnames[] = {
     NULL,  /* COPT_BOOL   */
     NULL,  /* COPT_BOOLI  */
+    "num", /* COPT_INT   */
+    "num", /* COPT_UINT  */
     "num", /* COPT_LONG   */
     "num", /* COPT_ULONG  */
     "num", /* COPT_SHORT  */
     "num", /* COPT_USHORT */
-    "flo", /* COPT_FLOAT  */
-    "flo", /* COPT_DOUBLE */
-    "chr", /* COPT_CHAR   */
+    "float", /* COPT_FLOAT  */
+    "float", /* COPT_DOUBLE */
+    "char", /* COPT_CHAR   */
     "str", /* COPT_STR    */
     "addr",/* COPT_URI   */
     "addr[:port]",/* COPT_SOCKADDR   */
@@ -732,6 +734,7 @@ static void print_opt_help(FILE* f, copt_t* opt, int flags, const char* errval)
 		if (0 == (flags & COPT_HELP_NOVALUES)){
 			if (t != COPT_HELP && t != COPT_STRLIST && 0 == (opt->type&COPT_CALLBACK)){
 				/* print default value */
+				*(p++) = ' ';
 				*(p++) = '[';
 				p += sprintf_option_value(opt, p);
 				*(p++) = ']';
