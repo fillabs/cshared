@@ -499,9 +499,13 @@ int cstrmatch(const char * pattern, const char * str) {
 	}
 	return 1;
 }
-//#elif defined (_MSC_VER)
-#else
+#elif defined(_MSC_VER)
+#include <shlwapi.h>
 int cstrmatch(const char * pattern, const char * str) {
-	return cstrequal(pattern, str);
+	return PathMatchSpec(str, pattern);
+}
+#else 
+int cstrmatch(const char* pattern, const char* str) {
+	return cstrequal(str, pattern);
 }
 #endif
