@@ -644,7 +644,7 @@ static int sprintf_option_value(const copt_t* const opt, char * const buf)
     case COPT_PATH:
     case COPT_CFGFILE:
     case COPT_STRENUM:
-        if(*(char**)opt->vptr)
+        if(opt->vptr && *(char**)opt->vptr)
 	        ret = sprintf(buf, "%s", *(char**)opt->vptr);
         else
 	        ret = sprintf(buf, "NULL");
