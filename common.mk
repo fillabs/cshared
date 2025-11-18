@@ -183,7 +183,7 @@ $(objects) $(binobjects): $(objdir)/%.o: %.c
 	$(GCC)  $(cflags) -o $@ -MMD -MF $(objdir)/$*.d -c $(abspath $<)
 
 clean:
-	rm -rf $(alibnames) $(solibnames) $(binnames) $(testbins) $(objects)
+	rm -rf $(alibnames) $(solibnames) $(binnames) $(testbins) $(objects) $(patsubst %.o, %.d, $(objects)) $(tobeclean)
 
 distfiles += $(wildcard Makefile $(DOXYFILE))
 dist:

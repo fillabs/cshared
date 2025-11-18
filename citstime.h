@@ -16,7 +16,11 @@ extern "C" {
     static inline uint32_t itstime32from64(uint64_t t){
 		return _itstime32from64(t);
 	}
-    #define _itstime64from32(t) (((uint64_t)t)*1000000) 
+    #define _itstime64from32(t)    (((uint64_t)t)*1000000) 
+    #define _itstime64fromsec(t)   _itstime64from32(t)
+    #define _itstime64frommsec(t)  (((uint64_t)t)*1000)
+    #define _itstime64fromusec(t)  ((uint64_t)t)
+    #define _itstime64fromnsec(t)  (((uint64_t)t)/1000)
     static inline uint64_t itstime64from32(uint32_t t){
 		return _itstime64from32(t);
 	}
@@ -45,6 +49,8 @@ extern "C" {
 	int      timeval_subtract(struct timeval* result, const struct timeval* x, const struct timeval* y);
 	uint32_t timeval2itstime32(const struct timeval * tv);    
 	uint64_t timeval2itstime64(const struct timeval * tv);
+	#define  timespec2itstime32(tv) timeval2itstime32((const struct timeval *)tv)
+	uint64_t timespec2itstime64(const struct timespec * tv);
 	static inline uint32_t time32from64(uint64_t t){
 		return (uint32_t)(t/1000000);
 	}
