@@ -134,10 +134,6 @@ struct timeval {
 	long    tv_sec;         /* seconds */
 	long    tv_usec;        /* and microseconds */
 };
-struct timespec {
-	long    tv_sec;         /* seconds */
-	long    tv_nsec;        /* and microseconds */
-};
 #endif
 uint64_t timeval2itstime64(const struct timeval * tv)
 {

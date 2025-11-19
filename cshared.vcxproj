@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="casn_oer.c" />
     <ClCompile Include="cdir_win.c" />
+    <ClCompile Include="citstime.c" />
     <ClCompile Include="clog.c" />
     <ClCompile Include="cmsgq.c" />
     <ClCompile Include="copts.c" />
@@ -29,11 +30,13 @@
     <ClCompile Include="cstr.c" />
     <ClCompile Include="ctree.c" />
     <ClCompile Include="e4c_lite.c" />
+    <ClCompile Include="mkgmtime.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="casn_oer.h" />
     <ClInclude Include="cbyteswap.h" />
     <ClInclude Include="cdir.h" />
+    <ClInclude Include="citstime.h" />
     <ClInclude Include="clog.h" />
     <ClInclude Include="cmem.h" />
     <ClInclude Include="cmsgq.h" />
@@ -44,6 +47,7 @@
     <ClInclude Include="cstr.h" />
     <ClInclude Include="ctree.h" />
     <ClInclude Include="e4c_lite.h" />
+    <ClInclude Include="mkgmtime.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D5918B85-FA45-4F75-9B50-C2D3E34ABA17}</ProjectGuid>
