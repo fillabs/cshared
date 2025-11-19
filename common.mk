@@ -62,8 +62,17 @@ endif
 cflags   += -fPIC -Wall
 
 define IncludePackage
-#$$(info include $$(CSHAREDDIR)/mk/pkg-$(1).mk)
-include $$(CSHAREDDIR)/mk/pkg-$(1).mk
+ ifeq (,$$(pkg_$(1)_disable))
+  #$$(info include $$(CSHAREDDIR)/mk/pkg-$(1).mk)
+  include $$(CSHAREDDIR)/mk/pkg-$(1).mk
+  ifeq (,$$(pkg_$(1)_disable))
+   sources  += $$(sources_$(1))
+   includes += $$(includes_$(1))
+   defines  += $$(defines_$(1))
+   cflags   += $$(cflags_$(1))
+   libs     += $$(libs_$(1))
+  endif
+ endif
 endef
 
 $(foreach pkg,$(packages),$(eval $(call IncludePackage,$(pkg))))
