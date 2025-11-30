@@ -1,9 +1,13 @@
 #ifndef citstime_h
 #define citstime_h
 
-#include <time.h>
 #ifndef _MSC_VER
+#define _GNU_SOURCE
+#include <time.h>
 #include <sys/time.h>
+#else
+#include <time.h>
+struct timespec;
 #endif
 #include <inttypes.h>
 #ifdef __cplusplus

@@ -18,6 +18,8 @@
 #include "citstime.h"
 #ifdef __GNUC__
 #include <sys/time.h>
+#else
+#include "./mkgmtime.h"
 #endif
 
 #define _SEC_IN_MINUTE 60L

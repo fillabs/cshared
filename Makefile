@@ -1,7 +1,6 @@
 PROJECTROOT   = ..
 CSHAREDDIR    = .
 PROJECT       = cshared
-DEBUG         = yes
 testdir       = tests
 
 alibs        = $(PROJECT)

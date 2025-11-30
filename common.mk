@@ -40,6 +40,7 @@ else
   defines += NDEBUG
   cflags  += -O2
 endif
+export DEBUG
 
 outdir     := $(BUILDROOT)/$(ARCH)$(dsuffix)
 objdir     := $(outdir)/o-$(PROJECT)

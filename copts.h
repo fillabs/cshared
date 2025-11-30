@@ -13,6 +13,7 @@
 #ifndef copts_h
 #define copts_h
 #include <stdio.h>
+#include <limits.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -192,13 +193,14 @@ extern "C" {
 
     /** The type of callback function to be called for the option having
         @ref COPT_CALLBACK bit set in the @e type field of the @ref copt_t structure.
-
-        These functions must return zero if option was successfully processed,
-        @ref COPT_EHELP to generate option help string or negative value when
-        some error was occured.
         @param opt The current item of the options array.
         @param option String option given.
         @param value Pointer to the option value.
+
+        Return values:
+          COPT_EHELP - help generated has been triggered
+          <0         - Some error occured.
+          0          - Success.
      */
 
     typedef int copt_callback(const copt_t * opt, const char * option, const copt_value_t * value);
@@ -212,28 +214,28 @@ extern "C" {
     enum coptflag_t
     {
         COPT_DEFAULT       = 0x0000, /**< No special flags given. */
-        COPT_NOAUTOHELP    = 0x0001, /**< Does not provide automatic help messages. */
-        COPT_NOCONFIG      = 0x0002, /**< Does not search for config files. */
-        COPT_NOREORDER     = 0x0004, /**< Does not reorder command line array. */
+        COPT_NOAUTOHELP    = 0x0001, /**< Do not provide automatic help messages. */
+        COPT_NOCONFIG      = 0x0002, /**< Do not search for config files. */
+        COPT_NOREORDER     = 0x0004, /**< Do not reorder command line array. */
         COPT_NOERR_MSG     = 0x0010, /**< Be silent. */
         COPT_NOERR_UNKNOWN = 0x0020, /**< Treat unknown options as non-option args.*/
         COPT_NOERR_ARG     = 0x0040, /**< Does not produce an error if the required
                                           option's argument is omited or have
                                           incompatible type. */
-        COPT_NOERR         = 0x0070, /**< Does not produce any errors. */
-        COPT_ERR_CONFIG    = 0x0080, /**< Does not produce config errors. */
-		COPT_NOHELP_MSG    = 0x0100, /**< Does not print help messages. */
-		COPT_HELP_NOVALUES = 0x0200, /**< Does not print default values. */
+        COPT_NOERR         = 0x0070, /**< Do not produce any errors. */
+        COPT_ERR_CONFIG    = 0x0080, /**< Do not produce config errors. */
+		COPT_NOHELP_MSG    = 0x0100, /**< Do not print help messages. */
+		COPT_HELP_NOVALUES = 0x0200, /**< Do not print default values. */
 	};
 
     /** @{
         @ref coptions return codes.
      */
     /** Help option (-h or --help) vaw invoked. Need to print help page.*/
-#define COPT_EHELP   ((int)(0x80000001))
+#define COPT_EHELP   (INT_MIN)
     /** Some error was occured.*/
-#define COPT_ERROR   ((int)(0x80000002))
-#define COPT_ERC(rc) (rc < 0 && 0==(rc & 0x8000000))
+#define COPT_ERROR   ((int)-1)
+#define COPT_ERC(rc) (rc < 0)
     /**@}*/
 
 /** @} */
